@@ -1,0 +1,28 @@
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: grafana
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - match: Host(`grafana.apealive.net`)
+    kind: Rule
+    middlewares:
+    - name: basicauthremove
+    - name: adminheader
+    services:
+    - name: grafana
+      port: 3000
+
+  - match: Host(`prometheus.apealive.net`)
+    kind: Rule
+    middlewares:
+    - name: basicauthremove
+    - name: adminheader
+    services:
+    - name: prometheus
+      port: 9090
+  tls:
+    certResolver: letsencrypt

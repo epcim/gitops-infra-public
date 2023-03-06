@@ -1,0 +1,20 @@
+octoprint:
+  kustomize:
+    patchesJson6902:
+    - target:
+        version: .*
+        kind: (StatefulSet|Deployment)
+        name: octoprint.*
+      patch: |-
+          - op: add
+            path: /spec/template/spec/nodeSelector
+            value: 
+              feature.node.kubernetes.io/3dprinter: {{ octoprint.persistence.printer.name |default("yes") }}
+          - op: add
+            path: /spec/template/spec/containers/0/resources
+            value:
+              requests:
+                memory: "128Mi"
+                cpu: "0.2"
+              limits:
+                memory: "512Mi"

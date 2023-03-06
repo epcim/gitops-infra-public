@@ -2,58 +2,83 @@
 
 # USAGE
 # make help
-# make a=grafana [render|deploy|show|...]
+# make i=grafana [diff|render|deploy|show|...]
 
+# ARGS TO ENV
+# SHELL := env TARGET=$(t) $(SHELL)
 
 # ARGS
-# 't' as an kluctl.io 'target' flag
-t ?= "$(ENV)"
-# 's' as an subpath shortcut to content, if not provaded deconstructed from ./_ file
-s ?= $(shell test -e _ && realpath --relative-base "$$PWD" "_" | sed 's,service/,,')
-PTH=service/$(s)
-
+# 't' as 'kluctl --target' flag, last used is stored in `_` symlink
+# 'i' as 'kluctl --include-tag', last used re-constructed  from `__`
+# 'e' as 'kluctl --exclude-tag'
+t ?= $(TARGET)
+i ?= $(shell test -e __ && realpath --relative-base "$$PWD" "__")
+e ?= 
+KLUCTL_ARGS ?=
+ifneq ($(strip $(i)),)
+	KLUCTL_ARGS += --include-tag "$(shell basename $(i))"
+endif
+ifneq ($(strip $(e)),)
+	KLUCTL_ARGS += --exclude-tag "$(shell basename $(e))"
+endif
 
 
 # DEFAULTS
 BUILD_DIR := ./.build
-KLUCTL_BIN ?= kluctl
-KUBECTL_BIN ?= kubectl
-KUSTOMIZE_BIN ?= kustomize
+KLUCTL ?= kluctl
+KUBECTL ?= kubectl
+KUSTOMIZE ?= kustomize
 #COLORIZER_DIFF ?= bat --paging=never -pl diff
-COLORIZER_DIFF ?= colout '\|\ \+.*$$' green normal | colout '\|\ \-.*$$' red normal
-COLORIZER_READ ?= bat -p
+#COLORIZER_DIFF ?= colout '\|\ \+.*$$' green normal | colout '\|\ \-.*$$' red normal
+COLORIZER_READ ?= bat -p -lyaml
 
-.PHONY: env help render build update diff force
-.DEFAULT_GOAL := deploy-dry
+.PHONY: env help render build update diff force workon
+.DEFAULT_GOAL := diff
 
 help:
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 	| sed -ne's/^\(.*\):\s*\(.*\)##\(.*\)/\1 @ \3/p' | column -c1 -ts "@";
 
-workon:
-	@echo "# $(PTH)"
-	@ln -sTf $(PTH) _
+prereq: .tools/kluctl/bin/kluctl
+
+workon: prereq
+	@echo "# $(t) $(strip $(i) $(KUBECONFIG))"
+	@ln -sTf $(t) _
+ifneq ($(strip $(i)),)
+	@ln -sTf $(i) __
+endif
+ifeq ($(strip $(i)), "none")
+	@unlink __
+endif
+	@ln -sTf cluster/$(t)/context.yml _context.yml
+	@ln -sTf cluster/$(t)/secrets.yml _secrets.yml
+
+.tools/kluctl/bin/kluctl:
+	@echo "# Building kluctl"
+	@cd .tools/kluctl &&\
+	 go mod vendor && make build
 
 ## Kluctl shortcuts
+deploy-dry: workon clean_build ## kluctl deploy --dry
+	$(KLUCTL) deploy -t $(t) --dry-run $(KLUCTL_ARGS)
 
-deploy-all: clean_build
-	@$(KLUCTL_BIN) deploy -t $(t) --render-output-dir $(BUILD_DIR)
+deploy: workon clean_build ## kluctl deploy
+	$(KLUCTL) deploy -t $(t) --replace-on-error --render-output-dir $(BUILD_DIR) $(KLUCTL_ARGS)
 
-deploy-dry: workon clean_build
-	@$(KLUCTL_BIN) deploy -t $(t) --render-output-dir $(BUILD_DIR) -a oneshot=$(s) --dry-run | $(COLORIZER_DIFF)
+apply: KLUCTL_ARGS += --yes # --force-apply
+apply: workon deploy ## kluctl deploy --yes (no approval) 
 
-apply: deploy
-deploy: workon clean_build
-	@$(KLUCTL_BIN) deploy -t $(t) --render-output-dir $(BUILD_DIR) -a oneshot=$(s) --replace-on-error --yes
+diff: workon ## kluctl diff
+	$(KLUCTL) diff -t $(t) --ignore-tags --ignore-labels --ignore-annotations --replace-on-error --force-apply --render-output-dir $(BUILD_DIR) $(KLUCTL_ARGS) # |$(COLORIZER_DIFF)
 
-render: workon clean_build
-	@$(KLUCTL_BIN) render -t $(t)  --render-output-dir $(BUILD_DIR) -a oneshot=$(s)
+diff-full: KLUCTL_ARGS += --no-obfuscate 
+diff-full: diff ## kluctl diff --no-obfuscate
 
-diff: workon
-	@$(KLUCTL_BIN) diff -t $(t) --ignore-tags --ignore-labels --ignore-annotations --render-output-dir $(BUILD_DIR) -a oneshot=$(s) | $(COLORIZER_DIFF)
+diff-kube: workon diff ## kubectl diff
+	@find $(BUILD_DIR)/**/$(i) -name ".rendered.yml" | xargs cat | kubectl diff -f - | $(COLORIZER_DIFF)
 
-show: workon render
-	@find $(BUILD_DIR)/**/$(s) -name ".rendered.yml" | xargs $(COLORIZER_READ)
+show: workon render ## print all manifests
+	@find $(BUILD_DIR)/**/$(i) -name ".rendered.yml" | xargs $(COLORIZER_READ)
 
 
 
@@ -73,14 +98,14 @@ seal: seal-sops
 unseal: unseal-sops
 
 seal-sops: workon ## SOPS Encrypt all secrets path matching [_sec|secret|config|*.secret*]
-	@find $(p) -path "*/secrets/*" -type f |\
+	@find $(i) -path "*/secrets/*" -type f |\
 		ggrep -Ev '(\.asc|\.sealed|\.matrix)' |\
 		while read file; do \
 		  sops -i -e $$file;\
 		done;
 
 unseal-sops: workon ## SOPS Decrypt all secrets (suffix: .enc and .enc.yaml)
-	@find $(p) -path "*/secrets/*" -type f |\
+	@find $(i) -path "*/secrets/*" -type f |\
 		ggrep -Ev '(\.asc|\.sealed|\.matrix)' |\
 		while read file; do \
 		  sops -i -d $$file;\

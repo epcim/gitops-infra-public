@@ -1,0 +1,24 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: adguard
+  namespace: sys
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: HostRegexp(`{app:(adguard)}.{{ global.external_domain }}`)
+    priority: 10
+    services:
+    - name: adguard-adguard-home
+      port: 3000
+      namespace: sys
+  tls:
+    {%- if traefik.resolver.cloudflare is defined %}
+    certResolver: cloudflare
+    {%- endif %}
+    domains:
+    - main: {{ global.external_domain }}
+      sans:
+      - adguard.{{ global.external_domain }}

@@ -1,0 +1,17 @@
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2
+
+namespace: sys
+
+commonLabels:
+  app: adguard
+
+{%- if adguard.kustomize is defined %}
+{{ adguard.kustomize | to_yaml }}
+{%- else %}
+resources:
+  - helm-rendered.yaml
+  # Opt, ingress (as might be needed before LB/Networiking is fully cofigured)
+  {%- if kube.ingress.class == "traefik" %}
+  - ./config/ingressRoute.yaml
+  {%- endif %}
+{%- endif %}

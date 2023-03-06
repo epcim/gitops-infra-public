@@ -1,27 +1,46 @@
 # https://kluctl.io/docs/kluctl/reference/kluctl-project/
 
-#discriminator: "kluctl-{{ target.name }}"
-
+# NOTE: Some targets are deployment `layers` of for the same cluster
+# NOTE: Kwok, Kind  cluster is only used for testing and development
 targets:
-# common setup with cluster connfig & monitoring, applied independently
 - name: base
+  #context: PATH or from KUBECONFIG env
   args:
-    environment: prod
+    bootstrap: true
+    envtype: primary
 
 - name: apealive
+  #context: PATH or from KUBECONFIG env
   args:
-    environment: prod
+    envtype: primary
 
+# for testing, use `kwokctl --name $ENV create cluster`
+- name: kwok
+  #context: FROM KUBECONFIG ENV, ie: KUBECONFIG=$HOME/.kwok/clusters/$ENV/kubeconfig.yaml 
+  args:
+    bootstrap: true
+    cluster_name: lab1
 # for testing, use `kind create cluster`
 - name: test
   context: kind-kind
-  args:
-    bootstrap: true
-    environment: test
+
+discriminator: "kluctl-{{ target.name }}"
 
 args:
 - name: bootstrap
   default: false
-- name: singleshot # to install single service only
+- name: env
+  default: staging
+- name: envtype
+  default: generic
+- name: platform
+  default: microk8s
+- name: environment
+  default: kluctl
+
+
+
+# DEPRECATED
+- name: oneshot # to install single service only
   default: ""
 

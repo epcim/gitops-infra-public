@@ -1,0 +1,27 @@
+# https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
+---
+deployments:
+
+# path: ./APP
+# path: ../../service/APP
+# - out of the box workinng examples,
+# - driven by params on context.yaml
+#
+# include: ./APP
+# - apps with local patches and configuration
+
+
+# CORE
+- include: ./metallb
+- barrier: true
+- include: ./longhorn
+- include: ./traefik
+- include: ./adguard
+
+# HOME
+- barrier: true
+  message: "Waiting for core componets to be finished"
+- include: ./hass     # FIXME, model
+- include: ./octoprint
+
+

@@ -1,0 +1,134 @@
+traefik:
+  # Traefik team never reesolved this, especially not with Longhorn
+  # !! ON FIRST DEPLOYMENT REMOVE POD SECURITY CONTEXT FROM DEPLOYMENT
+  {% if args.bootstrap %}
+  podSecurityContext: null
+  {% endif %}
+
+  deployment:
+    initContainers:
+    # Related issue: https://github.com/traefik/traefik/issues/6972
+    - name: volume-permissions
+      image: busybox:latest
+      command: ["sh", "-xc", "id; ls -lahR /data; chmod -v 777 /data; touch /data/acme.json; chown 65532 -Rv /data;  chmod -Rv 600 /data/acme* || true"]
+      volumeMounts:
+      - name: data
+        mountPath: /data
+
+
+  persistence:
+    name: data
+    enabled: true
+    {% if not args.bootstrap %}
+    #existingClaim: 
+    {% endif %}
+    path: /data
+    size: 128Mi
+    storageClass: {{ kube.storage.class }}
+    #storageClass: microk8s-hostpath
+    # annotations: {
+    #   "pv.beta.kubernetes.io/gid": "65532"
+    # }
+
+
+
+  # FIXME, SOME OF THESE MOVE TO DEFAULTARGS
+  additionalArguments:
+  # This is needed because sys/unifi has self-signed certificate,
+  # we expose valid Letsencrypt certificate over port 443
+  - --serverstransport.insecureskipverify=true
+  # - "--api.insecure=true"
+
+  # ping
+  #- --ping=false
+
+  # force cert renew
+  #- --certificatesresolvers.cloudflare.acme.certificatesduration=240
+
+  # loadbalancer # NOT SURE WHETHER NEEDED, it already existed
+  - --providers.kubernetesingress.ingressendpoint.ip={{ secrets.vip_traef }}
+
+  # letsEncrypt
+  {%- if traefik.resolver.cloudflare is defined %}
+  #- --certificatesresolvers.cloudflare.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+  - --certificatesresolvers.cloudflare.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
+  - --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
+  - --certificatesresolvers.cloudflare.acme.email={{ traefik.resolver.cloudflare.acme.email }}
+  - --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1
+  - --certificatesresolvers.cloudflare.acme.storage=/data/acme.json
+
+  # entrypoints
+  - --entrypoints.websecure.http.tls.certresolver=cloudflare
+  - --entrypoints.websecure.http.tls.domains[0].main={{ global.external_domain }}
+  - --entrypoints.websecure.http.tls.domains[0].sans=*.{{ global.external_domain }}
+  - --entrypoints.websecure2.http.tls.certresolver=cloudflare
+  - --entrypoints.websecure2.http.tls.domains[0].main={{ global.external_domain }}
+  - --entrypoints.websecure2.http.tls.domains[0].sans=*.{{ global.external_domain }}
+  {%- endif %}
+  #
+  - --accesslog=true
+  #- --set podSecurityContext.fsGroup=null # TO TEST
+  #
+  {%- if traefik.resolver.cloudflare is defined %}
+  env:
+    - name: CF_API_EMAIL
+      value: {{ secrets.infra.admin.email }}
+    - name: CF_DNS_API_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: cloudflare-api
+          key: {{ global.external_domain }}
+  {%- endif %}
+
+  service:
+      annotations: {}
+        # external-dns.alpha.kubernetes.io/hostname: "ipv4.${SECRET_DOMAIN}"
+      #loadBalancerSourceRanges:
+      # - 172.31.5.0/28
+      # - 172.31.2.0/28
+      # externalIPs:
+      # - 172.31.5.
+      # - 172.31.2.
+      # - 172.31.1.
+      # - 192.168.124.1
+      #
+  ports:
+    traefik:
+      expose: false
+    web:
+      redirectTo: websecure
+    web2:
+     port: 8200
+     exposedPort: 8080
+     expose: true
+     redirectTo: websecure
+    websecure:
+       port: 8443
+       exposedPort: 443
+       #http3: true # experimental
+       expose: true
+       tls:
+         enabled: true
+         certResolver: cloudflare
+         domains:
+         - main: {{ global.external_domain }}
+           sans:
+           - "*.{{ global.external_domain }}"
+    websecure2:
+       port: 8243
+       exposedPort: 8443
+       #http3: true # experimental
+       redirectTo: websecure               # FIXME, vs. def. below
+       expose: true
+       # tls:
+       #   enabled: true
+       #   certResolver: cloudflare
+       #   domains:
+       #   - main: {{ global.external_domain }}
+       #     sans:
+       #     - "*.{{ global.external_domain }}"
+    ssh:
+        #protocol: TCP
+        port: 8222
+        exposedPort: 22
+        expose: true

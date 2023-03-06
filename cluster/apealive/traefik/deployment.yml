@@ -1,0 +1,11 @@
+deployments:
+  - path: .
+    vars:
+    # CLUSTER SPECIFIC
+      - file: context-{{ global.clusterName }}.yml
+        ignoreMissing: true                        
+        noOverride: true
+    # BEST PRACTICE SETUP
+      - file: context.yml
+        ignoreMissing: true
+        noOverride: true

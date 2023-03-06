@@ -1,0 +1,14 @@
+namespace: &ns home
+
+commonLabels:
+  app: octoprint
+
+replicas:
+- name: octoprint
+  count: 1
+
+{%- if octoprint.kustomize is defined %}
+{{ octoprint.kustomize | to_yaml }}
+{%- endif %}
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

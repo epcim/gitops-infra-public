@@ -1,0 +1,15 @@
+hass:
+  # CLUSTER DEFAULTS
+
+  # EXCEPTION
+  # BEST-PRACTICE DEFAULTS ARE IN helm-values.yml
+
+  kustomize:
+    resources:
+      - helm-rendered.yaml
+    generatorOptions:
+      disableNameSuffixHash: true
+    configMapGenerator:
+    - name: home-assistant
+      files:
+      - config/configuration.yaml

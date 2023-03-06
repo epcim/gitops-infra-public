@@ -1,0 +1,11 @@
+namespace: metallb
+
+resources:
+- github.com/metallb/metallb/config/native?ref=v0.13.9
+- config/pools-{{ global.clusterName }}.yaml
+
+{%- if metallb.kustomize is defined %}
+{{ metallb.kustomize | to_yaml }}
+{%- endif %}
+
+

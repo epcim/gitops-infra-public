@@ -1,0 +1,43 @@
+longhorn:
+    # NOTE, kept for  compatibility
+    defaultSettings:
+      taintToleration: "hw=kvm:NoSchedule"
+    # NOTE, kept for  compatibility
+    longhornManager:
+      tolerations:
+      - key: "hw"
+        operator: "Equal"
+        value: "kvm"
+        effect: "NoSchedule"
+
+    # patches etc...
+    kustomize:
+      patchesJson6902:
+      # NOTE, Single node deployment
+      # NOTE, Kustomize itself can't handle helm hooks, required during upgrades
+      # to prevent longhorn-uninstall job to create/execute, deploy placeholder
+      # DEPRECATED, but kept for temp. time
+      - target:
+          version: .*
+          kind: Job
+          name: longhorn-uninstall
+        patch: |-
+          - op: replace
+            path: /spec/template/spec/containers/0/command
+            value:
+              - "echo kustomize-patched, wont uninstall"
+              # - longhorn-manager
+              # - uninstall
+              # - --force
+
+      # EXAMPLE
+      # - target:
+      #     version: .*
+      #     kind: (Deployment)
+      #     name: longhorn-nfs.*
+      #   patch: |-
+      #     - op: add
+      #       path: /spec/template/spec/nodeSelector
+      #       value: 
+      #         longhorn: "yes"
+    ########################################################

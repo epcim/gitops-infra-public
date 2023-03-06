@@ -1,0 +1,12 @@
+  # RECORD ALL INTERPOLATED PARAMS
+  # this file is used for render test
+  global: &global
+     internal_domain: example.com
+     external_domain: example.com
+  <<: *global
+
+  octoprint:
+    # <<: *global
+    persistence:
+      printer:
+        name: prusa

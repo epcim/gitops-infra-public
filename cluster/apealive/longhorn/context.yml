@@ -1,0 +1,76 @@
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2
+#
+# RECORD ALL INTERPOLATED PARAMS
+# COMMENT COMMON CONFIG EXAMPLES
+
+# this file is used for render test
+global: &global
+   internal_domain: example.com
+   external_domain: example.com
+<<: *global
+
+longhorn:
+  # implicit
+  # <<: *global
+  
+  # csi:
+    # microk8s
+    # kubeletRootDir: "/var/snap/microk8s/common/var/lib/kubelet"
+
+  # INTERPOLATED Params
+  backupstore:
+    nfs:
+      path: /somePath
+      nodeSelector: ~
+
+  # HELM Values
+  installCRDs: true
+  fullnameOverride: longhorn
+
+  image:
+    pullPolicy: IfNotPresent
+
+  defaultSettings:
+    defaultDataPath: "/var/lib/longhorn"
+    backupTargetCredentialSecret: longhorn-backup
+    #backupTarget: s3://longhorn@minio-backup.sys.svc.cluster.local:9000/
+    #backupTarget: nfs://longhorn-nfs-svc.longhorn-system:{{ longhorn.backupstore.nfs.path }} 
+    defaultReplicaCount: 3
+    defaultLonghornStaticStorageClass: longhorn
+    createDefaultDiskLabeledNodes: true
+    mkfsExt4Parameters: -O ^64bit,^metadata_csum
+
+    # DETACH ALL VOLUMES ON CHANGE !!
+    # https://longhorn.io/docs/1.2.3/advanced-resources/deploy/taint-toleration/
+    taintToleration: "hw=kvm:NoSchedule"
+
+
+  enablePSP: false
+
+  persistence:
+    defaultClass: false
+
+  ingress:
+    tls: false
+
+  longhornManager:
+    nodeSelector:
+      longhorn: "yes"
+  longhornDriver:
+    nodeSelector:
+      longhorn: "yes"
+
+  # FIXME define ingress
+  # ingress:
+  #   enabled: true
+  #   ingressClassName: "traefik"
+  #   annotations:
+  #     traefik.ingress.kubernetes.io/router.entrypoints: websecure
+  #     traefik.ingress.kubernetes.io/router.tls: "true"
+  #     hajimari.io/enable: "true"
+  #     hajimari.io/icon: shield-check
+  #     hajimari.io/group: network
+  #     hajimari.io/appName: longhorn
+  #   host: longhorn.apealive.net
+  #   tls: false
+

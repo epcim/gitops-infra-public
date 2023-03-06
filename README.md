@@ -1,98 +1,139 @@
 
-# My GIT-OPS INFRA
+## Docs
 
-- Its "Minimalist" model for k8s deployment & operation
+This is an kluctl.io/Kustomize deployment.
 
-- Its "CLI first" and "CICD" later
+## Structure
 
-- Its based on Kustomize + Kluctl.io and KRM Functions
 
-- IN PROGRESS: `services` are to some extent share-able for different deployments under `targets`
+```
+├── .kluctl.yml                       - kluctl.io project
+├── deployment.yml                    - kluctl deployment
+│
+├── context.yml                       - control parameters
+│
+├── cluster
+│   ├── apealive
+│   │  	├── <namespace/app>
+│   │	│   ├── kustomization.yaml
+│   │	│
+│   │  	├── deployment.yml
+│   │  	├── context.yml               - application parameters
+│   │  	├── secrets.yml               - application secrets
+│   │
+│   ├── context-<target>.yml          - cluster/target global parameters
+│                                     
+├── compose                           - reusable components
+│   ├── nodeSelector
+│
+├── services                          - reusable application catalog (DRAFT)
+│   ├── <application>
+│                                     
+│
+├── Makefile                          - (local use only, shortcuts, optional)
+├── .envrc                            - env configuration
+├── .build                            - localy rendered resources
+├── .repos                            - remote resources fetched/used locally
+├── .tools                            - src code of tools used for deployment
+├── .scripts                          - last sort of escape hell from rutines
+...
+```
 
-- In 2023 I reworked the structure to better fit [kluctl.io](https://kluctl.io) which best fits all
-  my needs identified in past few years. More on its features here [kluctl.io/blog](https://kluctl.io/blog/).
+It's:
+- "Minimalist" model for lab k8s deployment
+- "CLI first" with [kluctl.io](https://kluctl.io) and "CICD" later
+- Leverage Kustomize, Kluctl.io, and SOPS (Helm is used only if no other option)
+- In 2023 I reworked the structure to better fit [kluctl.io](https://kluctl.io)
+
 
 ## DISCLAIMER
 
-As of `2023/03` there are still manny things in-progress or in re-design. Even though I use the private copy of this repo
-daily on my deployments. Main structure wont change, but I will move all target specific logic under target directory
-and free this way `services` directory to be more re-usable. 
-
-Independent configuration of services is not implemented at all.
-
-Metal bootstrap is subject to rework. I will use [tinkerbell.org](tinkerbell.org)/iPXE for the physical part.
-For the nodes I use today this [ansible repo](https://github.com/epcim/ansible-infra).
+- Metal bootstrap is subject to rework. I will use [tinkerbell.org](tinkerbell.org)/iPXE for the physical part. For the nodes configuration I use my [ansible repo](https://github.com/epcim/ansible-infra) as of today.
+- Work in progress
 
 ## Concept and features:
 
 - Metal bootstrap
-  - iPXE/PXE with http, tftpd
-  - ansible config management
+  - network install with iPXE (http only)
+  - node config management ansible/(salt)
 
-- K8s deploy with `kluctl.io` or `kubectl` builtin Kustomize
-  - Integrated secret encryption with SOPS
-  - Interpolation and hooks based on `kluctl.io` features
-  - Tend to use mostly Kustomize resources
-  - Tend to Helm library charts before regular helm charts
-  - TO REWORK: Full gitops with ArgoCD/Flex (when deployed)
-  - Makefile wrapper
+- K8s deploy with `kluctl.io`
+  - Makefile wrapper for repeated CLI operations
+  - Parameter interpolation, SOPS decryption, hooks and other `kluctl.io` features.
+  - Tend to use Kustomize over Helm resources
+  - Tend to Helm library charts for simple deployments
+  - TBD: Template gotpl/jsonent/... rendering for config delivery
+  - TBD: CICD with ArgoCD/[KluctlController](https://github.com/kluctl/flux-kluctl-controller)
 
 - Model
-  - `services` can be deployed independently
-  - `services` can be shared many times with overrides under `targets`
   - configuration is separated from the application deployment files.
-  - Prometheus kube stack/Grafana/Thanos
+  - `services` catalog of indpendently deployable services
 
-POSTPONED:
-- KRM Functions
-  - for (helm, gotpl, jsonnet) rendering
-- Monitoring
-  - Jsonnet configuration for monitoring resources
+## Usage
 
-## Structure
-
-```
-├── compose                           - reusable components, overlays
-│
-├── serivce                           - app manifests
-│   ├── deployment.yml                - Kluctl.io sub/deployment
-│   ├── restic
-│   │   ├── configs
-│   │   ├── secrets
-│   │   ├── overlays
-│   │   ├── kustomization.yaml
-│
-├── targets
-│   ├── base
-│   ├── lab1
-│   │   ├── deployment.yml            - Kluctl.io sub/deployment
-│   │   ├── <namespace>
-│   │   │   ├── <app instance>
-│
-├── .envrc                            - env configuration
-├── .kluctl.yml                       - Kluctl.io project
-├── deployment.yml                    - Kluctl.io deployment targets
-├── context.yml -> <target>/<name>/   - parameters
-├── secrets.yml -> <target>/<name>/   - secrets (SOPS encrypted)
-│
-├── Makefile                          - (local use only, shortcuts, optional)
-├── .scripts                          - last sort of escape hell from rutines
-├── .build                            - localy rendered resources
-├── .repos                            - remote resources fetched/used locally
-├── .tools                            - src code of tools used for deployment
-...
-
+with make wrapper:
+```sh
+make help
 ```
 
-Note: For single cluster deployment you may want instead `targets/<name>` use just `cluster`.
+with kluctl:
+```
+$KLUCTL --help
+$KLUCTL deploy -t base --dry-run
+$KLUCTL deploy -t apealive  --include-tag jellyfin --dry-run
+```
 
-Note: All cluster related configuration goes under `targets`
+edit secrets:
+```
+sops -i secrets.yml
+```
 
+update deployment & params:
+```
+$EDITOR deployment.yml context.yml .kluctl.yml
+```
 
 
 ## Setup
 
-Can varry, his is what I use on OSX:
+Initial setup:
+```sh
+direnv allow .
+vendir sync
+
+# build tools
+cd .tools/kluctl; go build; cd -
+
+# unseal SOPS(AGE) encryption key
+matrix decrypt -in ./.env.age.matrix -out ./.env.age
+```
+
+Git refered deployment resources can be overriden by local path:
+```
+# defaults in .envrc overrides to repos synced to .repos
+export KLUCTL_GIT_CACHE_UPDATE_INTERVAL=1h
+export KLUCTL_LOCAL_GIT_GROUP_OVERRIDE_0=github.com:epcim=${WORKSPACE:-$PWD/.repos}
+
+```
+
+Env:
+```
+direnv allow .       # to source `.envrc` variables
+
+vendir sync          # to sync `.tools` and `.repos`
+```
+
+### Recomended OSX tools
+
+Required:
+
+```sh
+brew install age sops jq bat direnv
+brew install kluctl/tap/kluctl
+brew tap vmware-tanzu/carvel && brew install vendir
+```
+
+Recommended:
 ```sh
 # OSX, GNU first class experience
 export PATH="$(brew --prefix coreutils)/libexec/gnubin:/usr/local/bin:$PATH"
@@ -109,79 +150,57 @@ brew install gnu-which
 brew install vendir
 brew install kluctl
 brew install kubectl
+brew install kwok
 brew install kustomize age sops jq bat direnv
 go install github.com/hashicorp/go-getter/cmd/go-getter@latest
 ```
 
-Sync
-```
-direnv allow .       # to source `.envrc` variables
 
-vendir sync          # to sync `.tools` and `.repos`
-```
-
-And prepare `age` & `gpg` structure in repo as described in section "Secrets"
-
-
-
-## Usage (kluctl)
-
-This is not `make` focused CI/Bootstrap! The idea is to transition to pure kubectl deployment (once all kustomize features settle there).
-
-TL;DR
-```sh
-make help
-
-make s=jellyfin
-make make apply
-make [render|diff|deploy|...]
-```
-
-## Usage (with kubectl)
-
-Some deployements are still based on pure Kustomize and KRM or internal HelmChart inflation pluging.
-These can be still used similar way:
-
-```
-make -f Makefile.kustomize render s=syncthing
-
-# which calls sth like
-kubectl kustomize --enable-alpha-plugins --load-restrictor LoadRestrictionsNone --network  service/syncthing
-```
-
-
-## Secrets
+### Secrets
 
 Encryption tools used:
-- SealedSecrets, prefered for kube secrets
 - Mozila SOPS for all all other
   - AGE is used as encryption engine for SOPS
 
-Docs:
+Configuration:
 - https://github.com/mozilla/sops#22encrypting-using-age
 - https://github.com/mozilla/sops#27kms-aws-profiles
 
+Configure public key's and keys to encrypt in `.sops.yaml`
 
-### AGE setup:
-
-```sh
-age-keygen -o .${ENV}.age
-
-gpg -a -r epcim@apealive.net -e .${ENV}.age
-git add -f .${ENV}.age.asc
-```
-
-### SOPS setup:
+SOPS encrypt/decrypt/edit:
 
 ```sh
-# configure AGE public key in .sops.yaml
-vim .sops.yaml
+# encrypt all secrets across
+make seal a=.
+
+# encrypting
+sops -e --in-place _secrets.yml
+
+# editing
+sops --in-place _secrets.yml
+
+# decrypt single file
+sops -d _secrets.yml
 ```
 
-### SealedSecrets setup: (DEPRECATED)
 
-backup master key:
+Use SOPS + AGE encryption:
+```sh
+age-keygen -o .env.age
 
+# and append to `.sops.yaml`
+```
+
+### Long term GPG encryption of private key
+
+Age:
+```
+gpg -a -r epcim@apealive.net -e .env.age
+git add -f .env.age.asc
+```
+
+SealedSecrets:
 ```
 key=.sealedsecrets-master.key
 kubectl get secret -n kube-system sealed-secrets-key -o yaml >| $key
@@ -194,13 +213,14 @@ gpg -d $key.asc # review
 }
 ```
 
-### Shortcuts
+## Debuging
 
-SOPS encrypt/decrypt:
+```
+cat .build/0/cluster/argo/.rendered.yml
+```
 
 ```sh
-# decrypt all secrets (with *.enc.* suffix)
-make unseal a=.
+kluctl --debug --render-output-dir .build
 
 ```
 

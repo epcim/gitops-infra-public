@@ -1,7 +1,0 @@
-# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2
-
-namespace: {{ falco.namespace | default("sec") }}
-
-resources:
-- helm-rendered.yaml
-

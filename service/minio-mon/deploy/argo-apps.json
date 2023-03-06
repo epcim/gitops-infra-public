@@ -1,7 +1,0 @@
-[
-  {
-    "name": "minio-backup",
-    "namespace": "sys",
-    "cluster": "in-cluster"
-  }
-]

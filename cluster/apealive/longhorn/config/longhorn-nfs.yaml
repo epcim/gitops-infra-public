@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: longhorn-nfs
+  namespace: longhorn-system
+  labels:
+    app: longhorn-nfs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: longhorn-nfs
+  template:
+    metadata:
+      labels:
+        app: longhorn-nfs
+    spec:
+      containers:
+      - name: longhorn-nfs-container
+        image: longhornio/nfs-ganesha:latest
+        imagePullPolicy: Always
+        env:
+        - name: EXPORT_ID
+          value: "14"
+        - name: EXPORT_PATH
+          value: {{ longhorn.backupstore.nfs.path }}
+        - name: PSEUDO_PATH
+          value: {{ longhorn.backupstore.nfs.path }}
+        # NOT USED
+        # - name: NFS_DISK_IMAGE_SIZE_MB
+        #   value: "4096"
+        # hostPath is mapped, no need to mount an image
+        command: ["bash", "-c", "chmod 700 {{ longhorn.backupstore.nfs.path }} && sed -i '/^create_nfs_disk_image$/d' /opt/start_nfs.sh && /opt/start_nfs.sh | tee /var/log/ganesha.log"]
+        #command: ["bash", "-c", "chmod 700 {{ longhorn.backupstore.nfs.path }} && /opt/start_nfs.sh | tee /var/log/ganesha.log"]
+        securityContext:
+          privileged: true
+          capabilities:
+            add: ["SYS_ADMIN", "DAC_READ_SEARCH"]
+        volumeMounts:
+        - name: nfs-volume
+          mountPath: "{{ longhorn.backupstore.nfs.path }}"
+        livenessProbe:
+          exec:
+            command: ["bash", "-c", "grep \"No export entries found\" /var/log/ganesha.log > /dev/null 2>&1 ; [ $? -ne 0 ]"]
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 4
+      volumes:
+      - name: nfs-volume
+        #emptyDir: {}
+        hostPath:
+          path: {{ longhorn.backupstore.nfs.hostPath | default(longhorn.backupstore.nfs.path) }}
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: longhorn-nfs-svc
+  namespace: longhorn-system
+spec:
+  selector:
+    app: longhorn-nfs
+  clusterIP: None
+  ports:
+  - name: notnecessary
+    port: 1234
+    targetPort: 1234

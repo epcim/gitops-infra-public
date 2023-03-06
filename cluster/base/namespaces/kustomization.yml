@@ -1,0 +1,6 @@
+resources:
+- template.yml
+#- ./replacements.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true

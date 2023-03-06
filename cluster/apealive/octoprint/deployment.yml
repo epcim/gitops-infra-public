@@ -1,0 +1,9 @@
+deployments:
+- path: .
+  vars:
+   - file: context-{{ global.clusterName }}.yml
+     ignoreMissing: true
+     noOverride: true
+   - file: context.yml
+     ignoreMissing: true                        
+     noOverride: true

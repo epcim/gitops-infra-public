@@ -1,7 +1,0 @@
-[
-  {
-    "name": "gitea",
-    "namespace": "gitops",
-    "cluster": "in-cluster"
-  }
-]

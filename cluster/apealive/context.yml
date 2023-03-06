@@ -1,0 +1,159 @@
+
+# FIXME, replace helm anchors / move to other context?
+helmTemplates:
+  bjws: &bjwsDefaults
+    env:
+      {{ kube.env | to_yaml | indent(10) }}
+    persistence:
+      config:
+        storageClass: longhorn
+      data:
+        storageClass: longhorn
+    ingress:
+      main:
+        ingressClassName: {{ kube.ingress.class }}
+        annotations: &traefikAnnotations
+          {{ kube.ingress.annotations | to_yaml | indent(10) }}
+    probes:  
+      probes:
+        liveness:
+          enabled: true
+        readiness:
+          enabled: false
+        startup:
+          enabled: false
+    kustomize:
+      resources:
+        - helm-rendered.yaml
+      generatorOptions:
+        disableNameSuffixHash: true
+
+
+# APP PARAMETERS
+params: &params
+  # core/sys deployments first
+  metallb:
+    namespace: metallb
+
+  longhorn:
+    namespace: longhorn-system
+    csi:
+      kubeletRootDir: "/var/snap/microk8s/common/var/lib/kubelet"
+    backupstore:
+      nfs:
+        path: /longhorn
+        hostPath: /mnt/Backup/longhorn
+    kustomize:
+      resources:
+        - helm-rendered.yaml
+        - ./config/ingressRoute.yaml
+
+  traefik:
+    namespace: sys
+    resolver:
+      cloudflare:
+        acme:
+          email: {{ secrets.infra.admin.email }}
+    service:
+      spec:
+        loadBalancerIP: "172.31.2.50"
+    kustomize:
+      resources:
+        - helm-rendered.yaml
+        - ./config/ingressRoute.yaml
+        - ./secret/cloudflare-api.yaml
+
+  adguard:
+    <<: *bjwsDefaults
+    namespace: sys
+    persistence:
+      config:
+        size: 1Gi
+        storageClass: longhorn
+      data:
+        enabled: false
+        size: 1Gi
+        storageClass: longhorn
+  ## ^^ core/system
+
+
+  argo:
+    namespace: argo
+
+  argocd:
+    bootstrap: false
+    namespace: gitops
+
+
+  esphome:
+    <<: *bjwsDefaults
+    namespace: iot
+
+  falco:
+    namespace: sec
+
+  hass:
+    #<<: *bjwsDefaults
+    persistence:
+      config:
+        size: 10Gi
+        # storageClass: longhorn
+    image:
+      tag: 2023.2.5
+    ingress:
+      main:
+        annotations:
+          # FIXME, faled implicit defaults from anchor
+          # <<: *traefikAnnotations
+          traefik.ingress.kubernetes.io/preserve-host: "true"
+          traefik.ingress.kubernetes.io/router.priority: "10"
+          traefik.ingress.kubernetes.io/router.tls: "true"
+          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    addons:
+      codeserver:
+        enabled: false
+    # kustomize:
+    #   resources:
+    #     - helm-rendered.yaml
+
+  hajimari:
+    <<: *bjwsDefaults
+    namespace: home
+
+  gitea:
+    namespace: gitops
+
+  grafana:
+    namespace: mon
+
+  jellyfin:
+    namespace: media
+
+  prometheus:
+    namespace: mon
+
+  influxdb:
+    namespace: mon
+
+  loki:
+    namespace: mon
+
+  minio-backup:
+    namespace: sys
+
+  octoprint:
+    <<: *bjwsDefaults
+    namespace: home
+    persistence:
+      data:
+        size: 6Gi
+      printer:
+        name: prusa-mini # label node with: feature.node.kubernetes.io/3dprinter 
+        hostPath: /dev/ttyACM0
+
+  thanos:
+    namespace: mon
+
+  unifi:
+    namespace: sys
+<<: *params

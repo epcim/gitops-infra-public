@@ -1,0 +1,129 @@
+
+traefik:
+  fullnameOverride: traefik
+
+  installCRDs: true
+
+  providers:
+    kubernetesCRD:
+      enabled: true
+      allowCrossNamespace: false
+      allowExternalNameServices: false
+      namespaces: []
+
+
+  globalArguments:
+  - "--global.checknewversion"
+  - "--entryPoints.websecure.http.tls=true"
+  - "--entryPoints.websecure2.http.tls=true" # FIXME
+  - "--providers.kubernetesingress.ingressclass=traefik"
+  - "--metrics.prometheus=true"
+  - "--metrics.prometheus.entryPoint=metrics"
+
+
+  persistence:
+    name: data
+    enabled: true
+    {% if not args.bootstrap %}
+    #existingClaim: 
+    {% endif %}
+    path: /data
+    size: 128Mi
+    storageClass: {{ kube.storage.class }}
+    #storageClass: microk8s-hostpath
+    # annotations: {
+    #   "pv.beta.kubernetes.io/gid": "65532"
+    # }
+
+
+
+  # Options for the main traefik service, where the entrypoints traffic comes from.
+  service:
+      # spec:
+        # externalTrafficPolicy: Cluster # default
+        # loadBalancerIP: "172.31.2.50"
+      enabled: true
+      type: LoadBalancer
+
+  ports:
+    traefik:
+      expose: false
+    web:
+      redirectTo: websecure
+    websecure:
+       port: 8443
+       exposedPort: 443
+       #http3: true # experimental
+       expose: true
+       tls:
+         enabled: true
+         certResolver: cloudflare
+         domains:
+         - main: {{ global.external_domain }}
+           sans:
+           - "*.{{ global.external_domain }}"
+
+    metrics:
+        port: 8082
+        expose: true
+        exposedPort: 8082
+
+  ingressRoute:
+    enabled: true
+    dashboard:
+      enabled: true
+      annotations: {}
+      labels: {}
+
+  ingressClass:
+    enabled: true
+    isDefaultClass: true
+    fallbackApiVersion: v1
+
+  tlsOptions:
+    default:
+      minVersion: VersionTLS12
+      maxVersion: VersionTLS13
+      sniStrict: true
+
+  pilot:
+    enabled: false
+
+  logs:
+      general:
+          format: json
+      access:
+          enabled: true
+          format: json
+
+  metrics:
+      prometheus:
+          enabled: true
+          entryPoint: metrics
+
+  affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                     - traefik
+              topologyKey: "kubernetes.io/hostname"
+
+  autoscaling:
+      enabled: false
+  #     minReplicas: 1
+  #     maxReplicas: 10
+  #     metrics:
+  #     - type: Resource
+  #       resource:
+  #         name: cpu
+  #         targetAverageUtilization: 60
+  #     - type: Resource
+  #       resource:
+  #         name: memory
+  #         targetAverageUtilization: 60

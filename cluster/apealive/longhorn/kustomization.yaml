@@ -1,0 +1,32 @@
+namespace: longhorn-system
+
+commonLabels:
+  nm: longhorn
+
+commonAnnotations:
+  prometheus.io/port: "9500"
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+#
+# EXAMPLES
+#- ./config/secret_backup-s3.yaml
+#- ./config/secret_backup-nfs.yaml
+
+
+{%- if longhorn.kustomize is defined %}
+{{ longhorn.kustomize | to_yaml }}
+{%- else %}
+resources:
+  - helm-rendered.yaml
+  # ALTERNATIVE
+  #- https://raw.githubusercontent.com/longhorn/longhorn/v1.4.1/deploy/longhorn.yaml
+  #
+  # Opt, ingress (as might be needed before LB/Networiking is fully cofigured)
+  {%- if kube.ingress.class == "traefik" %}
+  - ./config/ingressRoute.yaml
+  {%- endif %}
+{%- endif %}
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

@@ -1,0 +1,15 @@
+---
+deployments:
+  - path: .
+    vars:
+    # CLUSTER SPECIFIC
+      - file: context-{{ global.clusterName }}.yml
+        ignoreMissing: true                        
+        noOverride: true
+    # BEST PRACTICE SETUP
+      - file: context.yml
+        ignoreMissing: true                        
+        noOverride: true
+
+# FIXME, https://kluctl.io/docs/kluctl/reference/deployments/kustomize/
+# git/path - from 2nd path: subdeployment the path to first is not the same

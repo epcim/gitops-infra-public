@@ -1,4 +1,4 @@
-
+# https://carvel.dev/vendir/docs/v0.32.0/vendir-spec/
 
 apiVersion: vendir.k14s.io/v1alpha1
 kind: Config
@@ -7,12 +7,14 @@ directories:
   contents:
   - path: kluctl
     git:
-      url: https://github.com/kluctl/kluctl
-      ref: main
+      url: https://github.com/epcim/kluctl    # kluctl/kluctl
+      ref: origin/main                        # branch with temp. customizations before features land in upstresm
+      #ref: origin/dyn-var-draft               # branch with dynamic path feature
   - path: kluctl-examples
     git:
       url: https://github.com/kluctl/kluctl-examples
       ref: origin/main
+      depth: 10
   - path: any-chart
     git:
       url: git@github.com:epcim/any-chart.git
@@ -23,7 +25,7 @@ directories:
       ref: main
   - path: bjws-helm-lib
     git:
-      url: git@github.com:epcim/bjws-helm-lib.git
+      url: git@github.com:bjw-s/helm-charts.git
       ref: main
 
 

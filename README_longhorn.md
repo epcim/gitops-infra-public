@@ -1,4 +1,15 @@
 
+## Install
+
+```
+kubectl rollout restart deployment/coredns -n kube-system
+```
+
+## Review
+
+```
+k describe -n longhorn-system nodes.longhorn.io
+```
 
 ## Fixes
 

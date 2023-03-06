@@ -1,0 +1,41 @@
+# any interpolation that is required on other context files and deployments
+
+# global paramaters
+global: &global
+  clusterName: {{ target.name }}
+<<: *global
+
+# cluster parameters
+kube:
+  ingress:
+    className: traefik
+  namespaces:
+    - kube-public
+    - kube-system
+    - gitops
+    - log
+    - mon
+    - net
+    - sec
+    - sys
+    - sto
+
+# Aws
+# Following must exist, even not used
+aws_account_id: FIXME
+awsauth:
+  eksctl_role_arn_main: none
+  eksctl_role_arn_etcd: none
+
+
+# Libs
+helm:
+  bjws:
+    # https://github.com/bjw-s/helm-charts app-template
+    chartVersion: 1.3.2
+  bitnami:
+    # https://github.com/bitnami/charts %%CHART_NAME%%
+    chartVersion: 0.1.0
+  truecharts:
+    # https://library-charts.truecharts.org
+    chartVersion: 11.1.2

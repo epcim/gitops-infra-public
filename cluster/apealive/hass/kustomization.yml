@@ -1,0 +1,20 @@
+namespace: home
+
+commonLabels:
+  app: hass
+
+# bases:
+  # JUST FOR BASES EXAMPLE
+  # - ../../../service/hass
+  #
+  # FIXME, new idea
+  # - ../../compose/kustomize-defaults
+
+{%- if hass.kustomize is defined %}
+{{ hass.kustomize | to_yaml }}
+{%- else %}
+resources:
+  - helm-rendered.yaml
+{%- endif %}
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

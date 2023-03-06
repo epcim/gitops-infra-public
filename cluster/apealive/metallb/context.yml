@@ -1,0 +1,7 @@
+metallb:
+  namespace: metallb-system
+
+  # interpolated
+  pool:
+    default:
+      cidr: 172.31.1.0/24

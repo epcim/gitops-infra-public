@@ -1,0 +1,27 @@
+---
+# htaccess file with demo credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: htaccess
+stringData:
+  # htpasswd -nb $USER $PASSWORD
+  ht: {{ secrets.traefik.basicauth.htpasswd }}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: basicauth
+spec:
+  basicAuth:
+    secret: htaccess
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: basicauthremove
+spec:
+  basicAuth:
+    removeHeader: true
+    secret: htaccess
+

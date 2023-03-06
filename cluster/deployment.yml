@@ -1,0 +1,21 @@
+# https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
+
+vars: # overrides
+  # cluster global params
+  - file: {{ target.name }}/context-global.yml
+    ignoreMissing: true
+  # cluster/app secrets, can be used for interpolation on params
+  - file: {{ target.name }}/secrets.yml
+  # app params
+  - file: {{ target.name }}/context.yml
+
+# LAYERS
+deployments:
+# TODO, load any base or optionals features
+  - include: base
+  - barrier: true
+# target coniguration
+  - include: {{ target.name }}
+  - barrier: true
+
+

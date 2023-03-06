@@ -1,9 +1,0 @@
-# RECORD ALL DEFAULTS USED
-
-app:
-  argo:
-    bootstrap: false
-    namespace: gitops
-  haas:
-    namespace: home
-

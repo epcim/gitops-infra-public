@@ -1,0 +1,13 @@
+# https://github.com/longhorn/charts/blob/master/charts/longhorn/values.yaml
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2
+
+# KLUCTL PARAMS, OVERRIDE DEFAULTS in context.yml
+{%- if longhorn is defined %}
+{{ longhorn | to_yaml }}
+{%- endif %}
+
+{%- if global is defined %}
+global:
+  {{ global | to_yaml |indent(2)}}
+{%- endif %}
+
