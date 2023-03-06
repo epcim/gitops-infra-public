@@ -1,0 +1,14 @@
+# whitelist
+!*/
+
+# local
+_
+.*
+secret*
+backup*
+*.lock.*
+*.bkp
+**/manifests
+private
+
+
