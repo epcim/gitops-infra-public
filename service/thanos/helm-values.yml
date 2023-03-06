@@ -1,0 +1,61 @@
+query:
+  enabled: true
+  replicaCount: 2
+  replicaLabels:
+    - replica
+  dnsDiscovery:
+    sidecarsService: prometheus-stack-thanos-discovery
+    sidecarsNamespace: mon
+  ingress:
+    enabled: true
+    hostname: thanos.apealive.net
+    annotations:
+      kubernetes.io/ingress.class: traefik
+      #nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16"
+      #nginx.ingress.kubernetes.io/auth-url: "https://auth.apealive.net/oauth2/auth"
+      #nginx.ingress.kubernetes.io/auth-signin: https://auth.apealive.net/oauth2/start
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      hajimari.io/enable: "false"
+      traefik.frontend.rule.type: PathPrefix
+  
+
+    hosts: [thanos.apealive.net]
+    #tls: true
+queryFrontend:
+  enabled: false
+bucketweb:
+  enabled: true
+compactor:
+  enabled: true
+  persistence:
+    enabled: false
+storegateway:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass: "longhorn"
+    accessModes:
+    - ReadWriteOnce
+ruler:
+  enabled: false
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+#### CONFIG SECTION ####
+objstoreConfig: |-
+  # type: FILESYSTEM
+  # config:
+  #   directory: "/data"
+  type: s3
+  config:
+    bucket: thanos
+    endpoint: minio-mon.apealive.net
+    access_key: "{{ secrets.thanos.backend_s3.access_key }}"
+    secret_key: "{{ secrets.thanos.backend_s3.secret_key }}"
+    #insecure: true
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2
