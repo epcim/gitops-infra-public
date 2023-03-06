@@ -1,0 +1,27 @@
+# vim: textwidth=120:nowrap
+# https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
+
+vars:
+  # shared layer of vars (boilerplate so no need to redefine the structures on each cluster-xyz deployment)
+  - file: cluster-{{target.name}}/vars-env.yml
+  - file: cluster-{{target.name}}/vars-sec.yml
+  - file: cluster-{{target.name}}/vars.yml
+    ignoreMissing: true
+
+deployments:
+  # cluster (boostrap and core components)
+  - include: cluster-{{target.name}}
+
+  # bundled stacks (where deployment can be driven only by provided {args}, or vars from cluster-{target.name}/vars*.yml)
+  # - include: library-stack/iot
+  # - include: library-stack/lma
+
+ignoreForDiff:
+  - group: cicd1
+    fieldPathRegex: metadata.labels.(kluctl|argo).*
+  - group: webhoooks1
+    fieldPathRegex: spec.conversion.webhook.*
+
+commonLabels:
+  examples.kluctl.io/deployment-target: "{{ target.name }}"
+

@@ -1,0 +1,39 @@
+deployments:
+  - path: ./namespaces
+  - path: ./kube-system
+  - barrier: true
+
+  - git:
+      subDir: service/metallb
+      url: git@github.com:epcim/gitops-library.git
+    args: {{ args }}
+    vars:
+    - values:
+        context: {{ cluster.metallb }}
+
+  - git:
+      subDir: service/longhorn
+      url: git@github.com:epcim/gitops-library.git
+    args: {{ args }}
+    vars:
+    - values:
+        context: {{ cluster.longhorn }}
+        secrets: {{ secrets.longhorn }}
+
+  - git:
+      subDir: service/traefik
+      url: git@github.com:epcim/gitops-library.git
+    args: {{ args }}
+    vars:
+    - values:
+        context: {{ cluster.traefik }}
+        secrets: 
+          cluster: {{ secrets.cluster }}
+          traefik: {{ secrets.traefik }}
+          infra: {{ secrets.infra }}
+        kustomize:
+          resources:
+            - helm-rendered.yaml
+            - ./overlays/cloudflare-api.yml
+            - ./overlays/ingressRoute.yaml
+

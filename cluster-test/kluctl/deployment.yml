@@ -1,0 +1,27 @@
+
+deployments:
+  - path: ../kluctl
+  - git:
+      url: https://github.com/kluctl/kluctl.git
+      subDir: install/controller
+      ref:
+        tag: v2.26.0
+    args:
+      controller_resources:
+        limits:
+          cpu: "1"
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 512Mi
+
+  - git:
+      url: https://github.com/kluctl/kluctl.git
+      subDir: install/webui
+      ref:
+        tag: v2.26.0
+      # vars:
+      # - values:
+      #     webui_args:
+      #       - --gops-agent
+

@@ -1,0 +1,21 @@
+
+cicd:
+  gitea:
+    config:
+      server:
+        DOMAIN: {{ global.externalDomain }}
+      admin:
+        email: "{{ secrets.infra.admin.email }}"
+    service:
+      ssh:
+        loadBalancerIP: {{ secrets.cluster.vip.gitea }}
+    persistance:
+      storageClass: "longhorn-static"
+    kustomize:
+      namespace: gitops
+
+  argocd:
+    bootstrap: false
+    namespace: gitops
+
+

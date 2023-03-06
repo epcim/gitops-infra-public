@@ -1,0 +1,93 @@
+global:
+  ecr: containers.{{ args.domain or "example.net" }}
+  internalDomain: {{ args.domain or "example.net" }}
+  externalDomain: {{ args.domain or "example.net" }}
+
+kube:
+  vendor: microk8s
+  storage:
+    class: longhorn
+  ingress:
+    class: traefik
+    annotations: &kubeIngressAnnotations
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      traefik.ingress.kubernetes.io/preserve-host: "true"
+      #traefik.ingress.kubernetes.io/router.priority: "10"
+      #ingress.kubernetes.io/whitelist-x-forwarded-for: "true"
+  namespaces:
+    - kube-public
+    - kube-system
+    - kluctl-system
+    - longhorn-system
+    - metallb
+    - velero
+    - gitops
+    - git
+    - ops
+    - iot
+    - log
+    - mon
+    - net
+    - sec
+    - sys
+    - sto
+    - home
+    #- media
+    #- games
+  env: &env
+    TZ: Europe/Prague
+
+
+# Helm charts / library charts
+helm:
+  bitnami:
+    # https://github.com/bitnami/charts %%CHART_NAME%%
+    chart:
+      chartVersion: 0.1.0
+  truecharts:
+    # https://library-charts.truecharts.org
+    chart:
+      chartVersion: 11.1.2
+  bjws:
+    # https://github.com/bjw-s/helm-charts app-template
+    chart:
+      repo: https://bjw-s.github.io/helm-charts
+      chartName: app-template
+      chartVersion: 1.3.2
+    common:
+      env: *env
+      persistence:
+        config:
+          storageClass: longhorn
+        data:
+          storageClass: longhorn
+      ingress:
+        main:
+          ingressClassName: traefik
+          annotations: *kubeIngressAnnotations
+            #{ kube.ingress.annotations | to_yaml | indent(12) }}
+            #traefik.ingress.kubernetes.io/router.entrypoints: websecure
+            #traefik.ingress.kubernetes.io/router.tls: "true"
+            #traefik.ingress.kubernetes.io/preserve-host: "false"
+            ##traefik.ingress.kubernetes.io/router.priority: "10"
+            ##ingress.kubernetes.io/whitelist-x-forwarded-for: "true"
+      probes:  
+        probes:
+          liveness:
+            enabled: true
+          readiness:
+            enabled: false
+          startup:
+            enabled: false
+
+kustomize:
+  commonLabels:
+    environment: {{ target.name }}
+  commonAnnotations:
+    "prometheus.io/scrape": "true"
+    "prometheus.io/scheme": "http"
+  generatorOptions:
+    disableNameSuffixHash: true
+
+

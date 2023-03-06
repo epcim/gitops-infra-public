@@ -1,0 +1,7 @@
+resources: # []
+  # TODO, move it to feature-vars/args
+  # because Longhorn v1.7.2 uses CSI external-snapshotter v7.0.2
+  # https://longhorn.io/docs/1.7.2/snapshots-and-backups/csi-snapshot-support/enable-csi-snapshot-support/
+  - github.com/kubernetes-csi/external-snapshotter/client/config/crd?ref=v7.0.2                      # these shall go to kube-system
+  - github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v7.0.2  # these shall go to kube-system
+

@@ -1,0 +1,36 @@
+apiVersion: gitops.kluctl.io/v1beta1
+kind: KluctlDeployment
+metadata:
+  name: "cluster-{{target.name}}"
+  namespace: kluctl-system
+spec:
+  interval: 10m
+  source:
+    git:
+      url: https://github.com/epcim/gitops-infra-public.git
+      path: "./"
+  timeout: 2m
+  target: {{target.name}}
+  context: default
+  credentials:
+    # https://kluctl.io/docs/gitops/spec/v1beta1/kluctldeployment/#git-authentication
+    git:
+    {% for repo in secrets.cicd.repo.keys() %}
+    {% if not secrets.cicd.repo[repo].password is defined %}
+    {% continue %}
+    {% endif %}
+    - host: gitea.example.net
+      path: epcim/{{ repo }}*
+      secretRef:
+        name: repo-{{ repo }}
+    {% endfor %}
+  # TODO: https://kluctl.io/docs/gitops/spec/v1beta1/kluctldeployment/#aws-kms-with-irsa
+  # temporary
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age-key
+  dryRun: false
+  manual: false   # will wait for manual approval
+  delete: true
+  prune:  true

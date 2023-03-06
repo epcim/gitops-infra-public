@@ -1,0 +1,4 @@
+*secret[s]*.y*ml diff=sopsdiffer
+*secret[s]*.*.y*ml diff=sopsdiffer
+*.sops   diff=sopsdiffer
+*.sops.* diff=sopsdiffer

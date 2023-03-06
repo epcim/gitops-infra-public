@@ -1,0 +1,35 @@
+# whitelist
+!*/
+
+# upstream
+library/*
+
+# local
+_*
+.*
+secret*
+backup*
+*.lock.*
+*.bkp
+**/manifests
+private
+
+
+# DEPRECATED
+# secrets
+.envrc.local
+.params.env
+**/_sec/*
+**/secret/*
+**/*.secret
+**/*-sealed
+#
+#
+metal
+.DS_Store
+**/*.bkp
+**/*.original
+**/*2del
+*~
+charts
+*.backup

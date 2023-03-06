@@ -1,0 +1,32 @@
+
+cluster:
+
+  metallb:
+    namespace: metallb
+    l2advertisement:
+    - default-pool
+    - servers-pool
+    ipaddresspool:
+      servers-pool: 
+      - 10.10.1.32/27
+      default-pool:
+      - 10.10.2.32/27
+      - 10.10.3.32/27
+
+  traefik:
+    namespace: sys
+    resolver:
+      cloudflare:
+        acme:
+          email: {{ secrets.infra.admin.email }}
+    service:
+      spec:
+        loadBalancerIP: "10.10.2.50"
+    persistence:
+      enabled: true
+      storageClass: {{ kube.storage.class }}
+    kustomize:
+      resources:
+        - helm-rendered.yaml
+        - overlays/cloudflare-api.yml
+

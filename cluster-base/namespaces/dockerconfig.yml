@@ -1,0 +1,25 @@
+
+{%- set nm = global.ecr.split('/')[0] | default('') %}
+{%- if nm %}
+{%- for ns in kube.namespaces %}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    name: {{ nm }}
+    namespace: {{ ns }}
+type: kubernetes.io/dockerconfigjson
+stringData:
+    ".dockerconfigjson": |-
+        {
+          "auths": {
+            "{{ nm }}": {
+              "username": "{{ secrets.ecrPrivate.username }}",
+              "password": "{{ secrets.ecrPrivate.password }}",
+              "email": "{{ secrets.ecrPrivate.email }}",
+              "auth": "{{ secrets.ecrPrivate.auth }}"
+            }
+          }
+        }
+{%- endfor %}
+{%- endif %}

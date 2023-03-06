@@ -1,0 +1,54 @@
+# https://carvel.dev/vendir/docs/v0.32.0/vendir-spec/
+
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+directories:
+- path: .tools
+  contents:
+  - path: kluctl
+    git:
+      url: https://github.com/kluctl/kluctl
+      ref: v2.26.0
+  - path: kluctl-examples
+    git:
+      url: https://github.com/kluctl/kluctl-examples
+      ref: origin/main
+      depth: 1
+  - path: any-chart
+    git:
+      url: git@github.com:epcim/any-chart.git
+      ref: main
+      depth: 1
+  - path: fake-chart
+    git:
+      url: git@github.com:epcim/fake-chart.git
+      ref: main
+      depth: 1
+  - path: bjws-helm-lib
+    git:
+      ref: main
+      url: git@github.com:bjw-s/helm-charts.git
+      depth: 1
+
+
+#- path: .repos
+#  contents:
+#  - path: cicd-deployment
+#    git:
+#      url: git@gitlab.com:myorg/mysub/cicd-deployment.git
+#      ref: origin/master
+#      #ref: origin/testglue
+#  - path: sre-deployment
+#    git:
+#      url: git@gitlab.com:myorg/mysub/sre-deployment.git
+#      ref: origin/master
+#
+## upload templates to fake helm charts
+## 
+#- path: deploy-service/argo/fake-chart/manifests
+#  contents:
+#  - path: .
+#    directory:
+#      path: .repos/cicd-deployment/argo/k8s/argo-cd
+#    excludePaths:
+#      - "*.matrix"

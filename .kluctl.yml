@@ -1,0 +1,53 @@
+# https://kluctl.io/docs/kluctl/reference/kluctl-project/
+
+# NOTE: Some targets are deployment `layers` of for the same cluster
+# NOTE: Kwok, Kind  cluster is only used for testing and development
+# NOTE: target.context: PATH to file or KUBECONFIG env value is used
+targets:
+- name: home
+  #context: .kube/config # or $KUBECONFIG exported on .envrc.local
+  args:
+    env: example
+    domain: example.net
+    ingress: traefik
+
+# for testing,
+# use `kwokctl --name local create cluster`
+- name: base
+  #context: export KUBECOFIG="$HOME/.kwok/clusters/local/kubeconfig.yaml" # or $KUBECONFIG exported on .envrc.local
+  args:
+    env: example
+# use `kind create cluster`
+- name: kind-local
+  context: kind-kind
+  args:
+    env: ci
+
+discriminator: "kluctl-{{ target.name | slugify }}"
+
+args:
+- name: env
+  default: example
+- name: kube
+  default: microk8s
+- name: cluster
+  default: example
+- name: ingress
+  default: traefik
+- name: domain
+  default: example.com
+# enabled features, value resolved by deployment.yml or on library/library-stack
+# an list, order  matter on library vars loading (overriding, first in list win)
+- name: features
+  default:
+    - longhorn:
+    - metallb:
+    - velero:
+    - traefik:
+        resolver: "cloudflare"
+
+aws:
+#   profile: default
+#   serviceAccount:
+#     name: sre-account
+#     namespace: sre-account-namespace

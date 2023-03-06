@@ -1,0 +1,18 @@
+apiVersion: gitops.kluctl.io/v1beta1
+kind: KluctlDeployment
+metadata:
+  name: "cluster-{{target.name}}-infra"
+  namespace: kluctl-system
+spec:
+  interval: 5m
+  source:
+    git:
+      url: https://github.com/epcim/gitops-infra-public.git
+      path: service-set-cicd
+  target: home
+  args:
+    environment: example
+  context: default
+  prune: false
+  delete: false
+

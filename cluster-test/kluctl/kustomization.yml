@@ -1,0 +1,4 @@
+
+resources:
+  - ./config/secret-sops-age-key.yml
+  - ./config/secret-model-repo-token.yml

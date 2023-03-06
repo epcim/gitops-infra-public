@@ -1,0 +1,6 @@
+creation_rules:
+  - encrypted_regex: '^((?i)(secret($|[^N])|data|stringData|.*(token|key|private|pass|secret|domain|ssid|webhook|url|vip|env).*))$'
+    # `,` separated list of keys
+    #pgp: >-
+    #  86A419AE721D52BDBD2293175B8DB74408F9296A
+    age: 'age10m5a4xhp6fhapwle0pces0ztptgy295dchqejv7a2xwjd7rfd9xquavs2t'

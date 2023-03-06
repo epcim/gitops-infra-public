@@ -1,0 +1,39 @@
+deployments:
+  #- include: ../library/service/gitea
+  - git:
+      url: git@github.com:epcim/gitops-library.git
+      subDir: service/gitea
+    args: {{ args }}
+    vars:
+    - values:
+        context:  {{ cicd.gitea }}
+        secrets:
+          gitea: {{ secrets.gitea }}
+          cluster:
+            vip:  {{ secrets.cluster.vip }}
+        kustomize:
+          namespace: gitops
+          labels:
+          - includeSelectors: true
+            pairs:
+              app: gitops # FIXME, I have deployed with wrong nm
+        overlays:
+        - ./overlays/ingress-traefik.yaml 
+
+    # TODO, 2nd instance
+  # - include: ../library/gitea
+  #   args: {{ args }}
+  #   vars:
+  #   - values:
+  #       context:  {{ cicd }}
+  #       secrets:
+  #         gitea: {{ secrets.gitea }}
+  #         cluster:                               # TODO, this is junk, move it to regular env_params (or feed them from secrets)
+  #           vip:  {{ secrets.cluster.vip }}
+  #       kustomize:
+  #         namespace: work
+  #         labels:
+  #         - includeSelectors: true
+  #           pairs:
+  #             app: gitea
+

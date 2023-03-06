@@ -1,0 +1,24 @@
+# vim: set ft=helm.jinja:syntax=on
+# https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
+
+vars:
+  - file: ./vars-set-cicd.yml
+  - file: ./vars-set-home.yml
+  - file: ./vars-set-infra.yml
+
+deployments:
+  - include: ../cluster-base
+
+  - include: kluctl
+    tags:
+    - kluctl
+
+  - path: gitops
+    tags:
+    - kluctl
+
+  - barrier: true
+
+  # FOR TESTING
+  # cicd, git
+  #- include: ../service-set-cicd
