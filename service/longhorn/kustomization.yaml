@@ -1,0 +1,46 @@
+
+namespace: longhorn-system
+
+commonLabels:
+  app: longhorn
+
+commonAnnotations:
+  prometheus.io/port: "9500"
+
+resources:
+- {{compose}}/kustomizeConfig.yaml
+- ./secret/backup.yaml
+- ./overlays/ingressRoute-longhorn.yaml
+
+# FIXME, configmap merge: https://github.com/kubernetes-sigs/kustomize/issues/3787
+#patchesStrategicMerge:
+#- ./overlays/delete-cm-storageclass.yaml
+#- ./overlays/patch-cm-storageclass.yaml
+
+# FIXME, Kustomize can't handle helm hooks
+# to prevent longhorn-uninstall job to create/execute
+patchesJson6902:
+- target:
+    version: .*
+    kind: Job
+    name: longhorn-uninstall
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/command
+      value:
+        - "echo kustomize-patched, wont uninstall"
+        #
+        # - longhorn-manager
+        # - uninstall
+        # - --force
+ 
+
+# images:
+# - name: longhornio/longhorn-manager
+#   newTag: v1.2.x-head
+# - name: longhornio/longhorn-engine
+#   newTag: v1.2.x-head
+# - name: longhornio/longhorn-ui
+#   newTag: v1.2.x-head
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

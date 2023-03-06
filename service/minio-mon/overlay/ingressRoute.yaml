@@ -1,0 +1,30 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: &nm minio-mon
+  namespace: mon
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: HostRegexp(`minio-mon.apealive.{tld:(local|net)}`) && Headers(`Content-Type`, `application/grpc`)
+    priority: 10
+    services:
+    - name: minio-mon
+      port: 9000
+      namespace: mon
+  - kind: Rule
+    match: HostRegexp(`mc-mon.apealive.{tld:(local|net)}`) #&& Headers(`Content-Type`, `application/grpc`)
+    priority: 11
+    services:
+    - name: minio-mon
+      port: 9001
+      namespace: mon
+  tls:
+    domains:
+      - main: apealive.net
+        sans:
+        - minio-mon.apealive.net
+        - mc-mon.apealive.net
+---

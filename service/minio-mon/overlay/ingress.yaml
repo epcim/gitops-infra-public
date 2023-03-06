@@ -1,0 +1,41 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-mon
+  labels:
+    app: minio-mon
+  namespace: mon
+  annotations:
+    hajimari.io/enable: "false"
+    hajimari.io/group: home
+    hajimari.io/appName: minio-mon
+    #traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    #traefik.ingress.kubernetes.io/router.tls: "true"
+    {{ kube.ingress.annotations| default("") | indent(4) }}
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: minio-mon.apealive.net
+    http:
+      paths:
+      - backend:
+          service:
+            name: minio-mon
+            port:
+              number: 9000
+        path: /
+        pathType: Prefix
+  - host: mc-mon.apealive.net
+    http:
+      paths:
+      - backend:
+          service:
+            name: minio-mon
+            port:
+              number: 9001
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - minio-mon.apealive.net
+    - mc-mon.apealive.net

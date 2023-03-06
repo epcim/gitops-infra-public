@@ -1,0 +1,24 @@
+#!/bin/bash -e
+
+file=$1
+fullname="${file##*/}"
+dirname="${file%/*}"
+basename="${fullname%.*}"
+extension=".${fullname##*.}"
+
+# If the file is in the same directory with the script,
+# path likely will not include any directory seperator.
+[[ "$dirname" == "$path" ]] && dirname="."
+
+# If the file has no extension, correct the variable accordingly.
+[[ "$extension" == ".$basename" ]] && extension=""
+
+# Destination file
+dest="${dirname}/${basename}.sealed${extension}";
+
+# Encrypt
+kubeseal -o yaml $@ < $file >| $dest
+git add -vf $dest
+
+# Validate
+#kubeseal --validate < $dest;

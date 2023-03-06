@@ -1,0 +1,226 @@
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2
+
+namespace: {{ falco.namespace | default("sec") }}
+
+resources:
+- helm-rendered.yaml
+
+#images:
+# #- name: docker.io/falcosecurity/falcosidekick-ui
+# #  newTag: 
+# 
+# ## DEPRECATED, kustomize built-in helm generator
+# #helmChartInflationGenerator:
+# 
+# ## NEW WAY1 (exec krm-fn)
+# #
+# 
+# ## NEW WAY2 (containerized krm-fn)
+# generators:
+#   - |-
+#     apiVersion: v1
+#     #apiVersion: v1alpha1
+#     kind: RenderHelmChart
+#     metadata:
+#       name: demo
+#       annotations:
+#         config.kubernetes.io/function: |
+#           container:
+#             network: true
+#             #image: us.gcr.io/k8s-artifacts-prod/krm-functions/render-helm-chart:unstable # from kubernetes-sigs/krm-functions-registry # image not found
+#             image: gcr.io/kpt-fn/render-helm-chart:v0.1.0
+# 
+#     helmCharts:
+#     # renovate: registryUrl=https://falcosecurity.github.io/charts
+#     - name: falco-exporter
+#       version: 0.8.0
+#       repo: https://falcosecurity.github.io/charts
+#       includeCRDs: true
+#       releaseName: falco-exporter
+#       namespace: sec
+#       valuesInline:
+#         grafanaDashboard:
+#           enabled: true
+#           namespace: mon
+#           #prometheusDatasourceName: Prometheus
+#         prometheusRules:
+#           enabled: true
+#         serviceMonitor:
+#           enabled: true
+#         #podSecurityPolicy:
+#           #create: false
+# 
+# 
+#     # renovate: registryUrl=https://falcosecurity.github.io/charts
+#     - name: falcosidekick
+#       version: 0.5.6
+#       repo: https://falcosecurity.github.io/charts
+#       includeCRDs: true
+#       releaseName: falcosidekick
+#       namespace: sec
+#       valuesInline:
+#           enabled: true
+#           config:
+#             alertmanager:
+#               minimumpriority: informational # emergency|alert|critical|error|warning|notice|informational|debug
+#               hostport: http://kube-prometheus-stack-alertmanager.mon.svc.cluster.local:9093
+#               endpoint: /api/v2/alerts
+#           webui:
+#             enabled: true
+#             redis:
+#               storageSize: "1Gi"
+#               storageClass: longhorn
+#               fullfqdn: falcosidekick-ui-redis.sec.svc.cluster.local
+#             service:
+#               type: LoadBalancer
+#             ingress:
+#               enabled: true
+#               ingressClassName: traefik
+#               annotations: 
+#                 kubernetes.io/ingress.class: "traefik"
+#                 traefik.ingress.kubernetes.io/router.entrypoints: websecure
+#                 traefik.ingress.kubernetes.io/router.tls: "true"
+#                 traefik.ingress.kubernetes.io/preserve-host: "true"
+#                 ingress.kubernetes.io/whitelist-x-forwarded-for: "true"
+#                 ingress.kubernetes.io/custom-request-headers: "host: falco.$DOMAIN"
+#                 hajimari.io/enable: "true"
+#                 hajimari.io/icon: "server-security"
+#                 hajimari.io/group: security
+#                 hajimari.io/appName: falco
+#               hosts:
+#                 - host: falco.$DOMAIN
+#                   paths:
+#                   - path: /
+#               #tls:
+#               #- hosts:
+#               #  - falco.$DOMAIN
+# 
+# 
+#     # renovate: registryUrl=https://falcosecurity.github.io/charts
+#     - name: falco
+#       version: 2.0.4
+#       repo: https://falcosecurity.github.io/charts
+#       includeCRDs: true
+#       releaseName: falco
+#       namespace: sec
+#       valuesInline:
+# 
+#         # with eBPF
+#         # https://github.com/falcosecurity/charts/tree/master/falco#using-falcosecuritydriver-loader-image-with-ebpf
+#         image:
+#           repository: falcosecurity/falco-no-driver
+#         extraInitContainers:
+#           - name: driver-loader
+#             image: docker.io/falcosecurity/falco-driver-loader:latest
+#             imagePullPolicy: Always
+#             volumeMounts:
+#               - mountPath: /host/proc
+#                 name: proc-fs
+#                 readOnly: true
+#               - mountPath: /host/boot
+#                 name: boot-fs
+#                 readOnly: true
+#               - mountPath: /host/lib/modules
+#                 name: lib-modules
+#               - mountPath: /host/usr
+#                 name: usr-fs
+#                 readOnly: true
+#               - mountPath: /host/etc
+#                 name: etc-fs
+#                 readOnly: true
+#               - mountPath: /root/.falco
+#                 name: driver-fs
+#             env:
+#               - name: FALCO_BPF_PROBE
+#                 value:
+#         extraVolumes:
+#           - name: driver-fs
+#             emptyDir: {}
+#         extraVolumeMounts:
+#           - mountPath: /root/.falco
+#             name: driver-fs
+#         ebpf:
+#           enabled: true
+#     
+#         #podSecurityPolicy:
+#           #create: false
+# 
+#         # k8s audit
+#         auditLog:
+#           enabled: false # FIXME
+#           dynamicBackend:
+#             enabled: true
+# 
+#         # config
+#         falco:
+#           logLevel: debug #  alert|critical|error|warning|notice|info|debug
+#           # priority level to load
+#           priority: informational # emergency|alert|critical|error|warning|notice|informational|debug
+#           stdoutOutput:
+#             enabled: true
+#           #grpc:
+#           #  enabled: true 
+#           #grpcOutput:
+#           #  enabled: true # NOTE: enable consumer, otherwise events will kept in memory
+#           jsonOutput: true
+#           jsonIncludeOutputProperty: true
+#           httpOutput:
+#             enabled: true
+#             url: "http://falcosidekick:2801"
+# 
+#         # falcosidekick
+#         # https://github.com/falcosecurity/charts/tree/master/falcosidekick#configuration
+#         falcosidekick:
+#           enabled: false   # installed independently
+# 
+#         # rules
+#         customRules:
+#           sre-security.yaml: |-
+#             - macro: activity_under_escalated_privilege
+#               condition: >
+#                 proc.name in (sudo, su)
+#                 or proc.pname in (sudo, su)
+#                 or proc.aname[1] in (sudo, su)
+#                 or proc.aname[2] in (sudo, su)
+#                 or proc.aname[3] in (sudo, su)
+#                 or proc.aname[4] in (sudo, su)
+#             
+#             - rule: Detect su or sudo
+#               desc: detect sudo activities
+#               condition: >
+#                 spawned_process
+#                 and activity_under_escalated_privilege
+#               output: >
+#                 Privilege escalation activity (user=%user.name auser=%user.loginname command=%proc.cmdline ppid=%proc.ppid apid=%proc.apid pid=%proc.pid gparent=%proc.aname[2] ggparent=%proc.aname[3] gggparent=%proc.aname[4] user_loginuid=%user.loginuid parent=%proc.pname pcmdline=%proc.pcmdline )
+#               priority: WARNING
+#               tags: [process, sudo, su]
+# 
+#           rules-traefik.yaml: |-
+#             - macro: traefik_consider_syscalls
+#               condition: (evt.num < 0)
+# 
+#             - macro: app_traefik
+#               condition: container and container.image startswith "traefik"
+# 
+#             # Restricting listening ports to selected set
+# 
+#             - list: traefik_allowed_inbound_ports_tcp
+#               items: [443, 80, 8080]
+# 
+#             - rule: Unexpected inbound tcp connection traefik
+#               desc: Detect inbound traffic to traefik using tcp on a port outside of expected set
+#               condition: inbound and evt.rawres >= 0 and not fd.sport in (traefik_allowed_inbound_ports_tcp) and app_traefik
+#               output: Inbound network connection to traefik on unexpected port (command=%proc.cmdline pid=%proc.pid connection=%fd.name sport=%fd.sport user=%user.name %container.info image=%container.image)
+#               priority: NOTICE
+# 
+#             # Restricting spawned processes to selected set
+# 
+#             - list: traefik_allowed_processes
+#               items: ["traefik"]
+# 
+#             - rule: Unexpected spawned process traefik
+#               desc: Detect a process started in a traefik container outside of an expected set
+#               condition: spawned_process and not proc.name in (traefik_allowed_processes) and app_traefik
+#               output: Unexpected process spawned in traefik container (command=%proc.cmdline pid=%proc.pid user=%user.name %container.info image=%container.image)
+#               priority: NOTICE
+# 

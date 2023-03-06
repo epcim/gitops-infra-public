@@ -1,0 +1,20 @@
+# https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
+---
+
+deployments:
+  # - path: {{compose}}
+  #   onlyRender: true
+{% for service in services %}
+  - path: {{ service }}
+{% endfor %}
+
+# Example
+# deployemnts:
+# - path: dugtrio
+#   barrier: true
+# - path: etcd
+#   waitReadiness: true
+# - git:
+#     url: git@gitlab.com:volterra/ves.io/cicd-deployment
+#     ref: testglue
+#     subDir: argo/k8s/argo-cd

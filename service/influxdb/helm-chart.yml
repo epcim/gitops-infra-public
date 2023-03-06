@@ -1,0 +1,14 @@
+helmChart:
+  # renovate: registryUrl=https://helm.influxdata.com
+  repo: https://helm.influxdata.com
+  chartName: influxdb
+  chartVersion: 4.11.0
+  releaseName: influxdb
+
+  namespace: mon2
+  skipCRDs: true
+  skipPrePull: true
+  #skipUpdate: false
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

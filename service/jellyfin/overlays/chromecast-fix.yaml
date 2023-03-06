@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyfin
+spec:
+  template:
+    spec:
+      containers:
+        # https://git.xsfx.dev/xsteadfastx/jellyfixer
+        - name: jellyfixer
+          image: docker.io/epcim/jellyfixer:latest
+          imagePullPolicy: IfNotPresent
+          env:
+          - name: JELLYFIXER_INTERNAL_URL
+            value: http://jellyfin.media.svc.cluster.local:8096
+          # - name: JELLYFIXER_EXTERNAL_URL
+          #   value: "https://jellyfin.apealive.net/"
+          ports:
+          - containerPort: 8088
+            name: jellyfixer
+            protocol: TCP

@@ -1,0 +1,26 @@
+# DOC
+# - https://github.com/kubernetes-sigs/node-feature-discovery
+# - https://github.com/npawelek/k8s-gitops/tree/master/cluster/core/node-feature-discovery
+
+namespace: &namespace kube-system
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+#resources:
+
+#patchesStrategicMerge:
+#- ./overrides/
+
+helmChartInflationGenerator:
+- chartName: node-feature-discovery
+  chartRepoUrl: https://k8s-at-home.com/charts
+  #chartVersion: 
+  releaseName: node-feature-discovery
+  releaseNamespace: *namespace
+  valuesMerge: override
+  extraArgs:
+  - --include-crds
+  valuesLocal:
+    installCRDs: true
+    #fullnameOverride:# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

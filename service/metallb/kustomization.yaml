@@ -1,0 +1,19 @@
+
+# https://github.com/bitnami/charts/tree/master/bitnami/metallb
+# 
+
+namespace: metallb
+
+resources:
+- github.com/metallb/metallb//manifests?ref=v0.11.0
+
+configMapGenerator:
+- name: config
+  files:
+    - config=config/apealive.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+  #labels:
+  #annotations:
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

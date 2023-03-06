@@ -1,0 +1,81 @@
+namespace: home
+
+commonLabels:
+  app: hass
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+- helm-rendered.yaml
+
+#replicas:
+#- name: hass-home-assistant
+#  count: 1
+
+configMapGenerator:
+- name: home-assistant
+  files:
+  - config/configuration.yaml
+ #- config/packages.yaml
+- name: home-assistant-automation
+  files:
+  - config/automation/arrive.yaml
+  - config/automation/leave.yaml
+ #- config/automation/events.yaml
+  - config/automation/garrage_buttons.yaml
+  - secret/integrations.yaml
+
+#path: overlays/config_volume_patch.yaml
+patchesJson6902:
+- target:
+    group: apps
+    kind: Deployment
+    name: hass-home-assistant
+    version: .*
+  patch: |-
+    # volumes
+    - op: add
+      path: /spec/template/spec/volumes/-
+      value:
+        name: configmap
+        configMap:
+          name: home-assistant
+    - op: add
+      path: /spec/template/spec/volumes/-
+      value:
+        name: configmap-automation
+        configMap:
+          name: home-assistant-automation
+    # mounts
+    - op: add
+      path: /spec/template/spec/containers/0/volumeMounts/-
+      value:
+        name: configmap
+        subPath: configuration.yaml
+        mountPath: /config/configuration.yaml
+    - op: add
+      path: /spec/template/spec/containers/0/volumeMounts/-
+      value:
+        name: configmap-automation
+        mountPath: /config/automation
+- target:
+    version: .*
+    kind: (StatefulSet|Deployment|ReplicationController)
+    name: hass-.*
+  patch: |
+    - op: add
+      path: /spec/template/spec/affinity
+      value:
+         nodeAffinity:
+           requiredDuringSchedulingIgnoredDuringExecution:
+             nodeSelectorTerms:
+             - matchExpressions:
+               - key: type
+                 operator: In
+                 values:
+                 - main
+
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

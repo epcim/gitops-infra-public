@@ -1,0 +1,5 @@
+
+# service: tts.google_translate_say
+# data:
+#   message: "Temperature is {{states('sensor.temperature')}}."
+#   cache: false

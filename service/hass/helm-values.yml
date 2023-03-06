@@ -1,0 +1,104 @@
+namespace: home
+
+persistence:
+  config:
+    enabled: true
+    size: 10Gi
+    #storageClass: microk8s-hostpath
+    storageClass: longhorn-static
+
+image:
+  repository: homeassistant/home-assistant
+  tag: 2023.2.5
+#initContainers:
+
+env:
+  TZ: Europe/Prague
+hostNetwork: true
+dnsPolicy: ClusterFirstWithHostNet
+
+probes:
+  liveness:
+    enabled: false
+  readiness:
+    enabled: false
+  startup:
+    enabled: true
+
+service:
+  main:
+    #type: LoadBalancer
+    #loadBalancerIP: 
+    #externalTrafficPolicy: Local
+    #annotations:
+    #  metallb.universe.tf/allow-shared-ip: 'true'
+    ports:
+      http:
+        port: 8123
+
+ingress:
+  main:
+    enabled: true
+    ingressClassName: "traefik"
+    annotations:
+      traefik.ingress.kubernetes.io/router.priority: "10"
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      traefik.ingress.kubernetes.io/preserve-host: "true"
+      ingress.kubernetes.io/whitelist-x-forwarded-for: "true"
+      hajimari.io/enable: "true"
+      hajimari.io/icon: home-assistant
+      hajimari.io/group: network
+      hajimari.io/appName: hass
+    hosts:
+    - host: hass.apealive.net
+      paths:
+      - path: /
+        pathType: Prefix
+    tls:
+    - hosts:
+      - hass.apealive.net
+
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 512M
+  limits:
+    memory: 2048M
+
+#tolerations:
+addons:
+  codeserver:
+    enabled: true
+    image:
+      repository: codercom/code-server
+      tag: 4.10.0
+    workingDir: "/config"
+    args:
+      - --user-data-dir
+      - "/config/.vscode"
+      - --auth
+      - "none"
+    env:
+      TZ: Europe/Prague
+      HASS_SERVER: http://localhost:8123
+    ingress:
+      enabled: true
+      ingressClassName: traefik
+      #annotations:
+        #nginx.ingress.kubernetes.io/auth-url: "https://auth.eviljungle.com/oauth2/auth"
+        #nginx.ingress.kubernetes.io/auth-signin: https://auth.eviljungle.com/oauth2/start
+      hosts:
+        - host: hass-vscode.apealive.net
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - hosts:
+            - hass-vscode.apealive.net
+    volumeMounts:
+    - name: config
+      mountPath: /config
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

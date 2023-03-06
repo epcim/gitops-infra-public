@@ -1,0 +1,22 @@
+alertmanager:
+  config:
+    global:
+      slack_api_url: $DISCORD_ALERTMANAGER_WEBHOOK_URL
+    receivers:
+    - name: 'null'
+
+prometheus:
+  prometheusSpec:
+    additionalScrapeConfigs:
+    - job_name: 'node'
+      static_configs:
+      - targets:
+        - FIXME_IP_OR_FQDN:9100
+    - job_name: 'home-assistant'
+      scrape_interval: 60s
+      metrics_path: '/api/prometheus'
+      bearer_token: '$PROM_HASS_TOKEN'
+      scheme: http
+      static_configs:
+      - targets:
+        - hass-home-assistant.home.svc:8123

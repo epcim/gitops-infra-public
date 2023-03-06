@@ -1,0 +1,19 @@
+
+namespace: gitops
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+# SECRETS
+- ./secret/repo-apealive.yaml
+- ./secret/repo-github.yaml
+
+# INGRESS
+#- ./overlay/ingressRoute.yaml
+
+# APPS
+# FIXME argo apps
+#- ./deploy/applicationSet-core.yaml
+#- ./deploy/applicationSet-apps.yaml
+

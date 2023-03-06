@@ -1,0 +1,27 @@
+# https://github.com/minio/minio/tree/master/helm/minio
+
+namespace: mon
+
+commonLabels:
+  s: minio
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+
+resources:
+- helm-rendered.yaml
+- overlay/ingress.yaml
+
+#patchesJson6902:
+#- target:
+#    version: .*
+#    kind: (StatefulSet|Deployment)
+#    name: .*
+#  patch: |-
+#    - op: add
+#      path: /spec/template/spec/nodeSelector
+#      value: 
+#        kubernetes.io/hostname: cmp1-nuc11
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

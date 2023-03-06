@@ -1,0 +1,34 @@
+#!/bin/bash
+
+## SH implementation of Gotpl render KRM Fn (this, draft)
+## GO implementation of Gotpl render KRM Fn (https://github.com/epcim/render-jsonnet-fn)
+
+# $1 - optional path to manifests
+[[ -z "$1" ]] || export FILE=$1
+[[ -z "$2" ]] || export JPATH=$2
+
+# defaults
+export WORKDIR=$PWD
+export JSONNET=jsonnetxx
+which $JSONNET &>/dev/null || export JSONNET="docker run -i --rm=true -v ${WORKDIR}:${WORKDIR} -w ${WORKDIR} bitnami/jsonnet:latest"
+
+# read `kind: ResourceList` from stdin
+read -r -t 1 -d $'\0' resourceList
+
+# config
+FILE=${FILE:-$(echo "$resourceList" | yq e '.functionConfig.spec.file' -)}
+JPATH=${JPATH:-$(echo "$resourceList" | yq e '.functionConfig.spec.jpath' -)}
+
+# fixtures, allow direction execution
+JPATH=${JPATH//null/vendor}
+
+# stop if sourced
+[[ "$0" != "$BASH_SOURCE" ]] && return
+
+# DEBUG
+#echo ${JSONNET} -J ${JPATH} ${FILE:-*.jsonnet} > .cmd
+#${JSONNET} -J ${JPATH} ${FILE:-*.jsonnet} | yq eval -P -  > .out
+#${JSONNET} -J ${JPATH} ${FILE:-*.jsonnet} | yq eval -P -  
+
+${JSONNET} -J ${JPATH:-$(dirname $0)/vendor} ${FILE:-*.jsonnet} 2>.log | yq eval -P - || { cat .log; rm .log; }
+

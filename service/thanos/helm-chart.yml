@@ -1,0 +1,13 @@
+helmChart:
+  #renovate: registryUrl=https://charts.bitnami.com/bitnami
+  repo: https://charts.bitnami.com/bitnami
+  chartName: thanos
+  chartVersion: 12.1.0
+  releaseName: thanos
+
+  namespace: mon
+  skipCRDs: false
+  skipPrePull: true
+  #skipUpdate: false
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

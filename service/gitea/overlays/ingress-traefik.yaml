@@ -1,0 +1,34 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: gitea
+  namespace: gitops
+spec:
+  entryPoints:
+  - websecure
+  - ssh
+  routes:
+  - kind: Rule
+    match: HostRegexp(`{app:(git|gitea)}.apealive.{tld:(home|net|local)}`) #&& Headers(`Content-Type`, `application/http`)
+    priority: 10
+    services:
+    - name: gitea-http
+      port: 3000
+      namespace: gitops
+  - kind: Rule
+    match: HostRegexp(`git.apealive.{tld:(home|net|local)}`)
+    priority: 11
+    services:
+    - name: gitea-ssh
+      port: 30022
+      scheme: UDP
+      namespace: gitops
+  tls:
+    certResolver: cloudflare
+    domains:
+    - main: apealive.net
+      sans:
+      - git.apealive.net
+      - gitea.apealive.net
+
+  # doc https://www.reddit.com/r/Traefik/comments/lpkexu/traefi_v2_and_gitea_ssh_access_again/

@@ -1,0 +1,22 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: adguard
+  namespace: sys
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: HostRegexp(`{app:(adguard)}.apealive.{tld:(net|local)}`)
+    priority: 10
+    services:
+    - name: adguard-adguard-home
+      port: 3000
+      namespace: sys
+  tls:
+    certResolver: cloudflare
+    domains:
+    - main: apealive.net
+      sans:
+      - adguard.apealive.net

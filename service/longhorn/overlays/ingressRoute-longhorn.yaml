@@ -1,0 +1,22 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: longhorn
+  namespace: longhorn-system
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: HostRegexp(`{app:(longhorn)}.apealive.{tld:(net|local)}`)
+    priority: 10
+    services:
+    - name: longhorn-frontend
+      port: 80
+      namespace: longhorn-system
+  tls:
+    certResolver: cloudflare
+    domains:
+    - main: apealive.net
+      sans:
+      - longhorn.apealive.net

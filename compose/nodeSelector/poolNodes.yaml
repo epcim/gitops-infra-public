@@ -1,0 +1,13 @@
+
+patchesJson6902:
+- target:
+    version: .*
+    kind: (StatefulSet|Deployment)
+    name: .*
+  patch: |-
+    - op: add
+      path: /spec/template/spec/nodeSelector
+      value: 
+        type: pool
+
+

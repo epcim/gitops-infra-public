@@ -1,0 +1,105 @@
+#
+# https://github.com/minio/minio/tree/master/helm/minio
+
+namespace: &ns sysflow
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+- ./secret/root-credentials.sealed.yaml
+
+patchesJson6902:
+- target:
+    version: .*
+    kind: (StatefulSet|Deployment)
+    name: .*
+  patch: |-
+    - op: add
+      path: /spec/template/spec/nodeSelector
+      value: 
+        kubernetes.io/hostname: cmp1-nuc11
+
+
+helmChartInflationGenerator:
+- chartName: minio
+  chartRepoUrl: https://charts.min.io/
+  # renovate: https://charts.min.io/
+  #chartVersion: 
+  releaseName: &rn minio-sysflow
+  valuesMerge: override
+  valuesLocal:
+    #installCRDs: true
+    mode: standalone
+      ## other supported values are "standalone", "gateway". "distributed"
+      # gateway  -> deployment
+      # standalone -> deployment
+      # distributed -> statefullset
+    existingSecret: *rn
+
+    # drivesPerNode: 1
+
+    users: []
+    # - accessKey: console
+    #   secretKey: console123
+    #   policy: consoleAdmin
+
+    buckets:
+      #   # Name of the bucket
+      # - name: bucket1
+      #   # Policy to be set on the
+      #   # bucket [none|download|upload|public]
+      #   policy: none
+      #   # Purge if bucket exists already
+      #   purge: false
+      #   # set versioning for
+      #   # bucket [true|false]
+      #   versioning: false
+      - name: longhorn
+        policy: none
+        purge: false
+        versioning: false
+          
+
+    persistence:
+      enabled: true
+      annotations: {}
+      # existingClaim: ""
+      storageClass: "microk8s-hostpath"
+      #VolumeName: existing-pv-volume-name
+      accessMode: ReadWriteOnce
+      size: 10Gi
+    resources:
+      requests:
+        memory: 1Gi
+
+    ingress:
+      enabled: true
+      ingressClassName: "traefik"
+      annotations:
+         traefik.ingress.kubernetes.io/router.entrypoints: websecure
+         traefik.ingress.kubernetes.io/router.tls: "true"
+         hajimari.io/enable: "false"
+      hosts:
+      - minio-sysflow.apealive.net
+      tls:
+      - hosts:
+        - minio-sysflow.apealive.net
+
+    consoleIngress:
+      enabled: true
+      ingressClassName: "traefik"
+      annotations:
+         traefik.ingress.kubernetes.io/router.entrypoints: websecure
+         traefik.ingress.kubernetes.io/router.tls: "true"
+         hajimari.io/enable: "false"
+         hajimari.io/icon: database
+         #hajimari.io/group: network
+         hajimari.io/appName: Minio
+      hosts:
+      - mc-sysflow.apealive.net
+      tls:
+      - hosts:
+        - mc-sysflow.apealive.net
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

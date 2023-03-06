@@ -1,0 +1,14 @@
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2
+
+namespace: sys
+
+commonLabels:
+  app: adguard
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+- helm-rendered.yaml
+
+

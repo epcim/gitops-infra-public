@@ -1,0 +1,125 @@
+# https://github.com/k8s-at-home/charts/blob/master/charts/stable/jellyfin/values.yaml
+
+image:
+  repository: jellyfin/jellyfin
+  tag: latest
+
+persistence:
+  config:
+    enabled: true
+    storageClass: "longhorn-static"
+    size: 5Gi
+    accessMode: ReadWriteOnce
+
+  media:
+    enabled: true
+    storageClass: "microk8s-hostpath"
+    size: 10Gi
+    accessMode: ReadWriteOnce
+    #mountPath: /media
+
+  # Cache does NOT contain temporary transcoding data.
+  cache:
+    enabled: false
+    mountPath: /cache
+
+
+service:
+  main:
+    type: LoadBalancer
+    loadBalancerIP: 172.31.5.55
+    primary: true
+    ports:
+      http:
+        port: 8096
+        protocol: HTTP
+        nodePort: 8096
+  # discovery:
+  #   type: LoadBalancer
+  #   loadBalancerIP: 172.31.5.56
+  #   ports:
+  #     discovery:
+  #       port: 1900
+  #       protocol: UDP
+  #       nodePort: 1900
+  #     discovery2:
+  #       port: 7359
+  #       protocol: UDP
+  #       nodePort: 7395
+
+
+
+probes:
+  liveness:
+    enabled: true
+  readiness:
+    enabled: false
+  startup:
+    enabled: false
+
+
+
+ingress:
+  main:
+    enabled: true
+    ingressClassName: "traefik"
+    annotations:
+       traefik.ingress.kubernetes.io/router.entrypoints: websecure
+       traefik.ingress.kubernetes.io/router.tls: "true"
+       hajimari.io/enable: "true"
+       #hajimari.io/icon: shield-check
+       hajimari.io/group: network
+       hajimari.io/appName: jellyfin
+
+       traefik.frontend.rule.type: PathPrefix
+       # fix
+       #traefik.http.routers.jellyfin-chromecast-fix.entryPoints=https
+       #traefik.http.routers.jellyfin-chromecast-fix.rule=Host(`jellyfin.appealive.net`) && Path(`/System/Info/Public`)
+       #traefik.http.routers.jellyfin-chromecast-fix.service=nginx-chromecast-fix-svc
+       ## TODO, jellyfin middleware
+       ## https://jellyfin.org/docs/general/networking/traefik2.html
+       #traefik.http.routers.jellyfin.middlewares: jellyfin-mw
+       ##### The customResponseHeaders option lists the Header names and values to apply to the response.
+       ##traefik.http.middlewares.jellyfin-mw.headers.customResponseHeaders.X-Robots-Tag: noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+       ##### The sslRedirect is set to true, then only allow https requests
+       #traefik.http.middlewares.jellyfin-mw.headers.SSLRedirect: true
+       ##### This is the exact URL that will be redirected to, so you can remove the :9999 port if using default SSL port
+       #traefik.http.middlewares.jellyfin-mw.headers.SSLHost: jellyfin.apealive.net
+       ##### Set sslForceHost to true and set SSLHost to forced requests to use SSLHost even the ones that are already using SSL.
+       ##### Note that this uses SSLHost verbatim, so add the port to SSLHost if you are using an alternate port.
+       #traefik.http.middlewares.jellyfin-mw.headers.SSLForceHost: true
+       ##### The stsSeconds is the max-age of the Strict-Transport-Security header. If set to 0, would NOT include the header.
+       #traefik.http.middlewares.jellyfin-mw.headers.STSSeconds: 315360000
+       ##### The stsIncludeSubdomains is set to true, the includeSubDomains directive will be
+       ##### appended to the Strict-Transport-Security header.
+       ##traefik.http.middlewares.jellyfin-mw.headers.STSIncludeSubdomains: true
+       ##### Set stsPreload to true to have the preload flag appended to the Strict-Transport-Security header.
+       #traefik.http.middlewares.jellyfin-mw.headers.STSPreload: true
+       ##### Set forceSTSHeader to true, to add the STS header even when the connection is HTTP.
+       #traefik.http.middlewares.jellyfin-mw.headers.forceSTSHeader: true
+       ##### Set frameDeny to true to add the X-Frame-Options header with the value of DENY.
+       #traefik.http.middlewares.jellyfin-mw.headers.frameDeny: true
+       ##### Set contentTypeNosniff to true to add the X-Content-Type-Options header with the value nosniff.
+       #traefik.http.middlewares.jellyfin-mw.headers.contentTypeNosniff: true
+       ##### Set browserXssFilter to true to add the X-XSS-Protection header with the value 1; mode=block.
+       #traefik.http.middlewares.jellyfin-mw.headers.browserXSSFilter: true
+       ##### The customFrameOptionsValue allows the X-Frame-Options header value to be set with a custom value. This
+       ##### overrides the FrameDeny option.
+       ##traefik.http.middlewares.jellyfin-mw.headers.customFrameOptionsValue: 'allow-from https://DOMAIN_NAME'
+       #traefik.http.services.jellyfin.loadBalancer.passHostHeader: true
+    hosts:
+    - host: jellyfin.apealive.net
+      paths:
+      - path: /
+        pathType: Prefix
+      - path: /System/Info/Public
+        pathType: Prefix
+    tls:
+    - hosts:
+       - jellyfin.apealive.net
+
+
+
+#vi: ft=yaml
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

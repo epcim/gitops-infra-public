@@ -1,0 +1,150 @@
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2
+# https://github.com/k8s-at-home/charts/blob/master/charts/stable/unifi
+# alternative: https://artifacthub.io/packages/helm/truecharts/unifi
+
+namespace: sys
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+commonLabels:
+  app: unifi
+
+resources:
+- helm-rendered.yaml
+# - ./overlays/ingress-traefik.yaml
+
+#patchesStrategicMerge:
+#- ./overrides/
+
+#helmChartInflationGenerator:
+#- chartName: unifi
+#  chartRepoUrl: https://k8s-at-home.com/charts
+#  chartVersion: 4.6.1
+#  releaseName: unifi
+#  releaseNamespace: net
+#  valuesMerge: override
+#  extraArgs:
+#  - --include-crds
+#  valuesLocal:
+#    installCRDs: true
+#    #fullnameOverride: unifi
+#    env:
+#      TZ: "Erurope/Prague"
+#      JVM_INIT_HEAP_SIZE: "256M"
+#      JVM_MAX_HEAP_SIZE: "512M" # For larger installations a larger value is recommended
+#    image:
+#      tag: v7.0.23
+#      pullPolicy: IfNotPresent
+
+#    resources:
+#      requests:
+#        memory: 512Mi
+#        cpu: 100m    
+#      limits:
+#        memory: 512Mi
+#        cpu: 1
+
+#    persistence:
+#      data:
+#        enabled: true
+#        storageClass: "longhorn-static"
+#        accessMode: ReadWriteOnce
+#        size: 1Gi
+
+#    mongodb:
+#      enabled: false
+
+#    hostNetwork: false    # FIXME
+
+#    service:
+#      main:
+#        # annotations:
+#        #   metallb.universe.tf/allow-shared-ip: 'true'
+
+#        # NOT LB, EXPOSED OVER TRAEFIK
+#        type: LoadBalancer # FIXME2
+#        # loadBalancerIP: 172.31.5.33
+#        externalTrafficPolicy: Local # Cluster # FIXME2
+
+#        ports:
+#          portal-http:
+#            enabled: false
+#          # disable all UDP
+#          stun:
+#            enabled: false
+#          syslog:
+#            enabled: false
+#          discovery:
+#            enabled: false
+
+#      udp:
+#        enabled: true
+#        # annotations:
+#        #   metallb.universe.tf/allow-shared-ip: 'true'
+        
+#        # FIXME
+#        type: LoadBalancer
+#        # externalIPs:
+#        # - 172.31.5.37
+#        loadBalancerIP: 172.31.1.30  # FIXME tady byla 5ka
+#        externalTrafficPolicy: Local # FIXME2
+
+#        ports:
+#          stun:
+#            enabled: true
+#            port: 3478
+#            protocol: UDP
+#          syslog:
+#            enabled: true
+#            port: 5514
+#            protocol: UDP
+#          discovery:
+#            enabled: true
+#            port: 10001
+#            protocol: UDP
+
+#    ingress:
+#      main:
+#        enabled: true
+#        ingressClassName: "traefik"
+#        annotations:
+#           # https://crt.the-mori.com/2020-11-15-traefik-v2-unifi-controller-kubernetes
+#           traefik.ingress.kubernetes.io/router.entrypoints: websecure #, websecure2
+#           traefik.ingress.kubernetes.io/router.tls: "true"
+#           traefik.ingress.kubernetes.io/preserve-host: "true"
+#           ingress.kubernetes.io/whitelist-x-forwarded-for: "true"
+#           #traefik.ingress.kubernetes.io/router.enablePassTLSCert: "true"
+#           #traefik.ingress.kubernetes.io/router.disablePassHostHeaders: "true"
+#           traefik.http.services.unifi.loadbalancer.server.port: 8443
+#           #traefik.http.services.unifi.loadbalancer.server.scheme: https
+#           #traefik.http.middlewares.unifi.redirectscheme.scheme: https
+#           hajimari.io/enable: "true"
+#           hajimari.io/icon: lan
+#           hajimari.io/group: network
+#           hajimari.io/appName: unifi
+#        hosts:
+#        - host: unifi.apealive.net
+#          paths:
+#          - path: /
+#            pathType: Prefix
+#        tls:
+#        - hosts:
+#           - unifi.apealive.net
+
+#      portal:
+#        enabled: false
+#        ingressClassName: "traefik"
+#        annotations:
+#          traefik.ingress.kubernetes.io/router.entrypoints: websecure
+#          traefik.ingress.kubernetes.io/router.tls: "true"
+#        hosts:
+#        - host: unifip.apealive.net
+#          paths:
+#          - path: /
+#            pathType: Prefix
+#        tls:
+#        - hosts:
+#           - unifip.apealive.net
+
+           

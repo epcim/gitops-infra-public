@@ -1,0 +1,7 @@
+[
+  {
+    "name": "adguard",
+    "namespace": "sys",
+    "cluster": "in-cluster"
+  }
+]

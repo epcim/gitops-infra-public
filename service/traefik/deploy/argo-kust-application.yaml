@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+spec:
+  sourceType: Kustomize
+  project: default
+  destination:
+    namespace: sys
+    server: https://kubernetes.default.svc
+  source:
+    path: envs/home/sys/traefik
+    repoURL: git@github.com:epcim/gitops-fleet.git
+    targetRevision: HEAD
+    #kustomize:
+      # Optional kustomize version. Note: version must be configured in argocd-cm ConfigMap
+      #version: v3.9.1
+      #namePrefix: prod-
+      #images:
+  #syncPolicy:
+    #automated:
+    #  prune: true
+    #  selfHeal: false
+    #syncOptions:
+    #- CreateNamespace=true

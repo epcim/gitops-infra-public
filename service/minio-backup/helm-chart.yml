@@ -1,0 +1,14 @@
+helmChart:
+  # renovate: registryUrl=https://charts.min.io/
+  repo: https://charts.min.io/
+  chartName: minio
+  chartVersion: 3.5.2
+  releaseName: minio-backup
+
+  namespace: sys
+  skipCRDs: false
+  skipPrePull: true
+  #skipUpdate: false
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

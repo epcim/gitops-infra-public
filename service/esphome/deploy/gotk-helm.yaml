@@ -1,0 +1,45 @@
+---
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: esphome
+  namespace: home
+  annotations:
+    fluxcd.io/automated: "false"
+    fluxcd.io/tag.chart-image: semver:~v2.
+spec:
+  releaseName: esphome
+  rollback:
+    enable: true
+  chart:
+    repository: https://k8s-at-home.com/charts/
+    name: esphome
+    version: v2.2.0
+  values:
+    namespace: "home"
+    persistence:
+      enabled: true
+      storageClass: "microk8s-hostpath"
+      #storageClass: "longhorn"
+      #size: 5Gi # 10Gi
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/tls-acme: "true"
+        kubernetes.io/ingress.class: "traefik-cert-manager"
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/router.priority: "10"
+        cert-manager.io/cluster-issuer: ca-issuer
+      tls:
+        - secretName: "esphome-apealive"
+      hosts:
+      - "esphome.apealive.net"
+      - "esphome.apealive.local"
+      paths:
+       - /
+    hostNetwork: true
+    probes:
+      liveness:
+        enabled: false
+      readiness:
+        enabled: false

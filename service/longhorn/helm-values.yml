@@ -1,0 +1,56 @@
+# https://github.com/longhorn/charts/blob/master/charts/longhorn/values.yaml
+installCRDs: true
+fullnameOverride: longhorn
+
+image:
+  pullPolicy: IfNotPresent
+
+defaultSettings:
+  defaultDataPath: "/var/lib/longhorn"
+  backupTargetCredentialSecret: longhorn-backup
+  backupTarget: s3://longhorn@minio-backup.sys.svc.cluster.local:9000/
+  defaultReplicaCount: 3
+  defaultLonghornStaticStorageClass: longhorn-static
+  createDefaultDiskLabeledNodes: true
+  mkfsExt4Parameters: -O ^64bit,^metadata_csum
+
+  # DETACH ALL VOLUMES ON CHANGE !!
+  # https://longhorn.io/docs/1.2.3/advanced-resources/deploy/taint-toleration/
+  taintToleration: "hw=kvm:NoSchedule"
+csi:
+  kubeletRootDir: "/var/snap/microk8s/common/var/lib/kubelet"
+
+persistence:
+  defaultClass: false # NOTE, make sure you have no other default set
+
+# ingress:
+#   enabled: true
+#   ingressClassName: "traefik"
+#   annotations:
+#     traefik.ingress.kubernetes.io/router.entrypoints: websecure
+#     traefik.ingress.kubernetes.io/router.tls: "true"
+#     hajimari.io/enable: "true"
+#     hajimari.io/icon: shield-check
+#     hajimari.io/group: network
+#     hajimari.io/appName: longhorn
+#   host: longhorn.apealive.net
+#   tls: false
+#   FIXME, needs to patch TLS
+#
+
+# https://longhorn.io/docs/1.2.3/advanced-resources/deploy/taint-toleration/
+# DETACH ALL VOLUMES ON CHANGE !!
+#longhornUI:
+longhornManager:
+  tolerations:
+  - key: "hw"
+    operator: "Equal"
+    value: "kvm"
+    effect: "NoSchedule"
+  nodeSelector:
+    longhorn: "yes"
+longhornDriver:
+  nodeSelector:
+    longhorn: "yes"
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

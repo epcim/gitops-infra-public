@@ -1,0 +1,27 @@
+# https://kluctl.io/docs/kluctl/reference/kluctl-project/
+
+#discriminator: "kluctl-{{ target.name }}"
+
+targets:
+# common setup with cluster connfig & monitoring, applied independently
+- name: base
+  args:
+    environment: prod
+
+- name: apealive
+  args:
+    environment: prod
+
+# for testing, use `kind create cluster`
+- name: test
+  context: kind-kind
+  args:
+    bootstrap: true
+    environment: test
+
+args:
+- name: bootstrap
+  default: false
+- name: singleshot # to install single service only
+  default: ""
+

@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitea
+  namespace: gitops
+spec:
+  sourceType: Kustomize
+  project: default
+  destination:
+    namespace: gitops
+    server: https://kubernetes.default.svc
+  source:
+    path: cluster/gitops/gitea
+    repoURL: https://git.apealive.net/epcim/infra.git
+    targetRevision: HEAD
+    #kustomize:
+      #version: v3.5.4
+      #namePrefix: prod-
+      #images:
+  #syncPolicy:
+    #automated:
+    #  prune: true
+    #  selfHeal: false
+    #syncOptions:
+    #- CreateNamespace=true

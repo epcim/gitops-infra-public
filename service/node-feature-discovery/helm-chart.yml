@@ -1,0 +1,14 @@
+helmChart:
+  # renovate: registryUrl=https://bjw-s.github.io/helm-charts
+  repo: https://bjw-s.github.io/helm-charts
+  chartName: app-template
+  chartVersion: {{ helm.bjws.chartVersion | default("1.3.2") }}
+  releaseName: node-feature-discovery
+
+  namespace: media
+  skipCRDs: false
+  skipPrePull: true
+  #skipUpdate: false
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

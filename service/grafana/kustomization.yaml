@@ -1,0 +1,36 @@
+namespace: mon
+
+configurations:
+- {{compose}}/kustomizeConfig.yaml
+
+generatorOptions:
+ disableNameSuffixHash: true
+
+commonLabels:
+  app: grafana
+  environment: {{ target.name }}
+
+commonAnnotations:
+  "prometheus.io/scrape": "true"
+  #"prometheus.io/scheme": http
+  #
+
+resources:
+- helm-rendered.yaml
+- ./secret/grafana.yaml
+
+# TEMP, basic auth
+secretGenerator:
+- name: grafana-oauth-secret
+  literals:
+  - client_id=admin
+  - client_secret={{ secrets.grafana.admin_password }}
+# - name: grafana-auth0-secret
+#   literals:
+#   - client_id={{ secrets.grafana.auth0.client_id }}
+#   - client_secret={{ secrets.grafana.auth0.client_secret }}
+
+
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

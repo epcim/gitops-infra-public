@@ -1,0 +1,13 @@
+helmChart:
+  # renovate: registryUrl=https://charts.bitnami.com/bitnami
+  repo: https://charts.bitnami.com/bitnami
+  chartName: minio
+  chartVersion: 12.1.9
+  releaseName: minio-mon
+
+  namespace: mon
+  #skipCRDs: true
+  skipPrePull: true
+  #skipUpdate: false
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

@@ -1,0 +1,38 @@
+# https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
+# noOverride: true
+# ignoreMissing: true
+# when: some.var == "value"
+
+vars:
+# implicit defaults
+  - file: service/context.yml
+# overrides
+  - file: targets/{{ target.name }}/secrets.yml
+  - file: targets/{{ target.name }}/context.yml
+# inline
+  - values:
+      compose: ../../compose
+      bootstrap: true
+
+      # to deploy single service only
+      #services:
+      #- argocd
+      
+
+deployments:
+  - path: compose
+    onlyRender: true
+  - include: targets/base
+  #- include: targets/monitoring
+  - include: targets/{{ target.name }}
+  - include: service
+
+#commonLabels:
+  #examples.kluctl.io/environment: "{{ args.environment }}"
+
+# ignoreForDiff:
+# - group: apps
+#   kind: Deployment
+#   namespace: my-namespace
+#   name: my-deployment
+#   fieldPath: spec.replicas

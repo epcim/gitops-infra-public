@@ -1,0 +1,29 @@
+- alias: Stisknuto tl Brana
+  description: Otevrit a zavrit branu
+  mode: single
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.tlacitkobrana
+    to: "on"
+    #for:
+    #  hours: 0
+    #  minutes: 0
+    #  seconds: 0
+  condition: []
+  action:
+  - entity_id: switch.brana
+    service: switch.turn_on
+
+# DISABLED - FLAPPING
+# - alias: Stisknuto tl Garaz
+#   description: Otevrit a zavrit branu
+#   mode: single
+#   trigger:
+#   - platform: state
+#     entity_id: binary_sensor.tlacitkogaraz
+#     to: "on"
+#   condition: []
+#   # action:
+#   # - entity_id: switch.garaz_2
+#   #   service: switch.turn_on
+

@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-core
+spec:
+  generators:
+    - git:
+        repoURL: git@git.apealive.net:epcim/infra.git
+        revision: HEAD
+        files:
+          - path: "apps/**/argo-core.json"
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+  template:
+    metadata:
+      name: '{{ name }}'
+      annotations:
+        argocd.argoproj.io/manifest-generate-paths: '/{{ path }}/..'
+        argocd.argoproj.io/sync-options: Prune=false
+    spec:
+      project: default
+      source:
+        path: '{{ path }}/..'
+        targetRevision: HEAD
+        repoURL: git@git.apealive.net:epcim/infra.git
+        #helm:
+        #  valueFiles:
+        #    - values.yaml
+        #    - '{{ valueFile }}'
+      destination:
+        namespace: '{{ namespace }}'
+        name: '{{ cluster }}'
+      syncPolicy:
+        #automated: {}
+        #    prune: true
+        #    selfHeal: true
+        syncOptions:
+        - ApplyOutOfSyncOnly=false
+      # https://argo-cd.readthedocs.io/en/latest/user-guide/diffing/
+      # ignoreDifferences:
+      #   - group: ""
+      #     kind: Secret
+      #     name: xyz
+      #     jsonPointers:
+      #       - /data
+      #   - group: ""
+      #     kind: Secret
+      #     name: xyz
+      #     jsonPointers:
+      #       - /data

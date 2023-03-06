@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo
+  namespace: gitops
+spec:
+  project: default
+  destination:
+    namespace: gitops
+    server: https://kubernetes.default.svc
+  source:
+      path: cluster/gitops/argocd
+      #repoURL: git@github.com:epcim/gitops-fleet.git
+      repoURL: https://git.apealive.net/epcim/infra.git
+      targetRevision: HEAD
+        #kustomize:
+      #kustomize:
+        #version: v3.5.4
+        #namePrefix: prod-
+        #images:
+    #syncPolicy:
+      #automated:
+      #  prune: true
+      #  selfHeal: false
+      #syncOptions:
+      #- CreateNamespace=true

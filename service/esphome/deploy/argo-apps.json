@@ -1,0 +1,7 @@
+[
+  {
+    "name": "esphome",
+    "namespace": "iot",
+    "cluster": "in-cluster"
+  }
+]

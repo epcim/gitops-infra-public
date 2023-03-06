@@ -1,0 +1,57 @@
+
+
+image:
+  repository: esphome/esphome
+  tag: "2023.2"
+
+
+persistence:
+  config:
+    enabled: true
+    #storageClass: "microk8s-hostpath"
+    storageClass: "longhorn-static"
+    size: 1Gi
+
+
+service:
+  main:
+    #type: LoadBalancer
+    #loadBalancerIP: 
+    #externalTrafficPolicy: Local
+    #annotations:
+    #  metallb.universe.tf/allow-shared-ip: 'true'
+    ports:
+      http:
+        port: 6052
+
+probes:
+  liveness:
+    enabled: true
+  readiness:
+    enabled: true
+  startup:
+    enabled: true
+
+
+
+ingress:
+  main:
+    enabled: true
+    ingressClassName: "traefik"
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      hajimari.io/enable: "true"
+      hajimari.io/icon: chip
+      hajimari.io/group: network
+      hajimari.io/appName: esphome
+    hosts:
+    - host: esphome.apealive.net
+      paths:
+      - path: /
+        pathType: Prefix
+    tls:
+    - hosts:
+      - esphome.apealive.net
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

@@ -1,0 +1,88 @@
+namespace: log
+
+#resources:
+
+
+## DEPRECATED, kustomize built-in helm generator
+#helmChartInflationGenerator:
+
+## NEW WAY1 (exec krm-fn)
+#
+
+## NEW WAY2 (containerized krm-fn)
+generators:
+  - |-
+    apiVersion: v1
+    #apiVersion: v1alpha1
+    kind: RenderHelmChart
+    metadata:
+      name: demo
+      annotations:
+        config.kubernetes.io/function: |
+          container:
+            network: true
+            #image: us.gcr.io/k8s-artifacts-prod/krm-functions/render-helm-chart:unstable # from kubernetes-sigs/krm-functions-registry # image not found
+            image: gcr.io/kpt-fn/render-helm-chart:v0.1.0
+
+    helmCharts:
+    # renovate: registryUrl=https://grafana.github.io/helm-charts
+    - name: promtail
+      version: 4.2.0
+      repo: https://grafana.github.io/helm-charts
+      includeCRDs: true
+      releaseName: promtail
+      namespace: log
+             
+      valuesInline:
+        tolerations:
+        - key: "arm"
+          operator: "Exists"
+        - key: "node-role.kubernetes.io/master"
+          operator: "Exists"
+        config:
+          lokiAddress: http://loki:3100/loki/api/v1/push
+          snippets:
+            extraScrapeConfigs: |
+              - job_name: journal
+                journal:
+                  path: /var/log/journal
+                  max_age: 12h
+                  labels:
+                    job: systemd-journal
+                relabel_configs:
+                  - source_labels: ['__journal__systemd_unit']
+                    target_label: 'unit'
+                  - source_labels: ['__journal__hostname']
+                    target_label: 'hostname'
+              - job_name: syslog
+                syslog:
+                  listen_address: 0.0.0.0:{{ .Values.extraPorts.syslog.containerPort }}
+                  label_structured_data: true
+                  labels:
+                    job: "syslog"
+                relabel_configs:
+                - source_labels: ['__syslog_message_hostname']
+                  target_label: 'host'
+                - source_labels: ['__syslog_message_app_name']
+                  target_label: 'app'
+        extraPorts:
+          syslog:
+            name: tcp-syslog
+            containerPort: 1514
+            protocol: TCP
+            service:
+              type: LoadBalancer
+              port: 1514
+              loadBalancerIP: 10.0.6.51
+              externalTrafficPolicy: Local
+        extraVolumes:
+          - name: journal
+            hostPath:
+              path: /var/log/journal
+        extraVolumeMounts:
+          - name: journal
+            mountPath: /var/log/journal
+            readOnly: true
+        serviceMonitor:
+          enabled: true
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

@@ -1,0 +1,14 @@
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2
+
+helmChart:
+# renovate: registryUrl=https://falcosecurity.github.io/charts
+  repo: https://falcosecurity.github.io/charts
+  chartVersion: 0.9.1
+  chartName: falco-exporter
+  releaseName: falco-exporter
+
+  namespace: sec
+  skipCRDs: false
+  skipPrePull: true
+  #skipUpdate: false
+

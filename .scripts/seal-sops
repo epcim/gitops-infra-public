@@ -1,0 +1,32 @@
+#!/bin/bash -e
+
+# sops-seal, encrypt file if modified (adds .enc before(as) its suffix)
+sops-seal() {
+
+  file=$1
+  fullname="${file##*/}"
+  dirname="${file%/*}"
+  basename="${fullname%.*}"
+  extension=".${fullname##*.}"
+
+  # If the file is in the same directory with the script,
+  # path likely will not include any directory seperator.
+  [[ "$dirname" == "$path" ]] && dirname="."
+
+  # If the file has no extension, correct the variable accordingly.
+  [[ "$extension" == ".$basename" ]] && extension=""
+
+  # Destination file
+  dest="${dirname}/${basename}.enc${extension}";
+
+  [[ ! -e "$dest" ]] && {
+    sops -e --output "$dest" "$file";
+  } || {
+    # if changed
+      diff $file <(sops --config ${SOPS_CONFIG:-.sops.yaml} -d "$dest") > /dev/null ||\
+      { rm "$dest"; echo "  ${dest}"; sops -e --config ${SOPS_CONFIG:-.sops.yaml} --output "$dest" "$file";};
+  }
+  git add -f ${dest} 
+}
+
+sops-seal $@

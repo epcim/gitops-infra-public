@@ -1,0 +1,198 @@
+# vim: ft=yaml.jinja2 syntax=yaml sts=2 ts=2 sw=2
+
+# with eBPF
+# https://github.com/falcosecurity/charts/tree/master/falco#using-falcosecuritydriver-loader-image-with-ebpf
+image:
+  repository: falcosecurity/falco-no-driver
+
+extra:
+  initContainers:
+  - name: driver-loader
+    image: docker.io/falcosecurity/falco-driver-loader:latest
+    imagePullPolicy: IfNotPresent
+    volumeMounts:
+    - mountPath: /host/proc
+      name: proc-fs
+      readOnly: true
+    - mountPath: /host/boot
+      name: boot-fs
+      readOnly: true
+    - mountPath: /host/lib/modules
+      name: lib-modules
+    - mountPath: /host/usr
+      name: usr-fs
+      readOnly: true
+    - mountPath: /host/etc
+      name: etc-fs
+      readOnly: true
+    # - mountPath: /root/.falco
+    #   name: driver-fs
+    env:
+    - name: FALCO_BPF_PROBE
+      value:
+
+# extraVolumes:
+#   - name: driver-fs
+#     emptyDir: {}
+# extraVolumeMounts:
+#   - mountPath: /root/.falco
+#     name: driver-fs
+# ebpf:
+#   enabled: true
+
+driver:
+  enabled: trrue
+  kind: ebpf
+  #kind: modern-ebpf
+
+podSecurityPolicy:
+  create: true
+
+# k8s audit
+auditLog:
+  enabled: false
+  dynamicBackend:
+    enabled: true
+
+# FALCO CONFIG
+falco:
+  logLevel: debug #  alert|critical|error|warning|notice|info|debug
+  # priority level to load
+  priority: informational # emergency|alert|critical|error|warning|notice|informational|debug
+  stdout_output:
+    enabled: true
+  #grpc:
+  #  enabled: true 
+  #grpc_output:
+  #  enabled: true # NOTE: enable consumer, otherwise events will kept in memory
+  json_output: true
+  jsonIncludeOutputProperty: true
+  http_output:
+    enabled: true
+#   url: "http://falcosidekick:2801"
+
+# FALCOSIDEKICK
+# https://github.com/falcosecurity/charts/tree/master/falcosidekick#configuration
+falcosidekick:
+  enabled: true
+  webui:
+    enabled: true
+    redis:
+      storageSize: "1Gi"
+      storageClass: longhorn
+      fullfqdn: falco-falcosidekick-ui-redis.sec.svc.cluster.local
+    service:
+      type: LoadBalancer
+    ingress:
+      enabled: true
+      #ingressClassName: traefik
+      annotations: 
+        kubernetes.io/ingress.class: "traefik"
+        traefik.ingress.kubernetes.io/router.entrypoints: websecure
+        traefik.ingress.kubernetes.io/router.tls: "true"
+        traefik.ingress.kubernetes.io/preserve-host: "true"
+        ingress.kubernetes.io/whitelist-x-forwarded-for: "true"
+        ingress.kubernetes.io/custom-request-headers: "host: falco.apealive.net"
+        hajimari.io/enable: "true"
+        hajimari.io/icon: "server-security"
+        hajimari.io/group: security
+        hajimari.io/appName: falco
+      hosts:
+        - host: falco.apealive.net
+          paths:
+          - path: /
+      #tls:
+      #- hosts:
+      #
+
+
+# FALCOCTL
+falcoctl:
+  image:
+    pullPolicy: IfNotPresent
+    registry: docker.io
+    repository: falcosecurity/falcoctl
+#    tag: "0.4.0"
+#  artifact:
+#    install:
+#      enabled: true
+#      env: {}
+#      args: ["--verbose"]
+#      resources: {}
+#      securityContext: {}
+#    follow:
+#      enabled: true
+#      env: {}
+#      args: ["--verbose"]
+#      resources: {}
+#      securityContext: {}
+#  config:
+#    indexes:
+#    - name: falcosecurity
+#      url: https://falcosecurity.github.io/falcoctl/index.yaml
+#    artifact:
+#      allowedTypes:
+#        - rulesfile
+#      install:
+#        resolveDeps: false
+#        refs: [falco-rules:0]
+#        rulesfilesDir: /rulesfiles
+#        pluginsDir: /plugins
+#      follow:
+#        refs: [falco-rules:0]
+#        every: 6h
+#        falcoversions: http://localhost:8765/versions
+#        rulesfilesDir: /rulesfiles
+#        pluginsDir: /plugins
+
+# RULES
+customRules:
+  sre-security.yaml: |-
+    - macro: activity_under_escalated_privilege
+      condition: >
+        proc.name in (sudo, su)
+        or proc.pname in (sudo, su)
+        or proc.aname[1] in (sudo, su)
+        or proc.aname[2] in (sudo, su)
+        or proc.aname[3] in (sudo, su)
+        or proc.aname[4] in (sudo, su)
+    
+    - rule: Detect su or sudo
+      desc: detect sudo activities
+      condition: >
+        spawned_process
+        and activity_under_escalated_privilege
+      output: >
+        Privilege escalation activity (user=%user.name auser=%user.loginname command=%proc.cmdline ppid=%proc.ppid apid=%proc.apid pid=%proc.pid gparent=%proc.aname[2] ggparent=%proc.aname[3] gggparent=%proc.aname[4] user_loginuid=%user.loginuid parent=%proc.pname pcmdline=%proc.pcmdline )
+      priority: WARNING
+      tags: [process, sudo, su]
+
+  rules-traefik.yaml: |-
+    - macro: traefik_consider_syscalls
+      condition: (evt.num < 0)
+
+    - macro: app_traefik
+      condition: container and container.image startswith "traefik"
+
+    # Restricting listening ports to selected set
+
+    - list: traefik_allowed_inbound_ports_tcp
+      items: [443, 80, 8080]
+
+    - rule: Unexpected inbound tcp connection traefik
+      desc: Detect inbound traffic to traefik using tcp on a port outside of expected set
+      condition: inbound and evt.rawres >= 0 and not fd.sport in (traefik_allowed_inbound_ports_tcp) and app_traefik
+      output: Inbound network connection to traefik on unexpected port (command=%proc.cmdline pid=%proc.pid connection=%fd.name sport=%fd.sport user=%user.name %container.info image=%container.image)
+      priority: NOTICE
+
+    # Restricting spawned processes to selected set
+
+    - list: traefik_allowed_processes
+      items: ["traefik"]
+
+    - rule: Unexpected spawned process traefik
+      desc: Detect a process started in a traefik container outside of an expected set
+      condition: spawned_process and not proc.name in (traefik_allowed_processes) and app_traefik
+      output: Unexpected process spawned in traefik container (command=%proc.cmdline pid=%proc.pid user=%user.name %container.info image=%container.image)
+      priority: NOTICE
+

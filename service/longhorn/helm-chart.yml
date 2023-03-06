@@ -1,0 +1,11 @@
+helmChart:
+  # renovate: registryUrl=https://charts.longhorn.io
+  repo: https://charts.longhorn.io
+  chartName: longhorn
+  chartVersion:  1.2.3
+  releaseName: longhorn
+
+  namespace: sys
+  skipCRDs: false
+  skipPrePull: true
+  #skipUpdate: false

@@ -1,0 +1,195 @@
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2
+installCRDs: true
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: false
+    allowExternalNameServices: false
+    namespaces: []
+fullnameOverride: traefik
+
+deployment:
+  initContainers:
+  # The "volume-permissions" init container is required if you run into permission issues.
+  # Related issue: https://github.com/traefik/traefik/issues/6972
+  - name: volume-permissions
+    image: busybox:1.35.0
+    command: ["sh", "-c", "chmod -v 777 /certs; chown 65532 -Rv /certs; chmod -Rv 600 /certs/* || true"]
+    volumeMounts:
+    - name: data
+      mountPath: /certs
+
+
+globalArguments:
+- "--global.checknewversion"
+- "--entryPoints.websecure.http.tls=true"
+- "--entryPoints.websecure2.http.tls=true"
+- "--providers.kubernetesingress.ingressclass=traefik"
+- "--metrics.prometheus=true"
+- "--metrics.prometheus.entryPoint=metrics"
+
+additionalArguments:
+# This is needed because sys/unifi has self-signed certificate, we expose valid Letsencrypt certificate over port 443
+- --serverstransport.insecureskipverify=true
+# - "--api.insecure=true"
+
+# force cert renew
+#- --certificatesresolvers.cloudflare.acme.certificatesduration=240
+
+# loadbalancer
+#- --providers.kubernetesingress.ingressendpoint.ip=${LB_TRAEFIK}
+
+# letsEncrypt
+#- --certificatesresolvers.cloudflare.acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory
+- --certificatesresolvers.cloudflare.acme.caServer=https://acme-v02.api.letsencrypt.org/directory
+- --certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare
+- --certificatesresolvers.cloudflare.acme.email=infra@apealive.net
+- --certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1
+- --certificatesresolvers.cloudflare.acme.storage=/certs/acme-apealive.json
+#
+# - --entrypoints.websecure.http.tls.certresolver=cloudflare
+# - --entrypoints.websecure.http.tls.domains[0].main=apealive.net
+# - --entrypoints.websecure.http.tls.domains[0].sans=*.apealive.net
+# - --entrypoints.websecure2.http.tls.certresolver=cloudflare
+# - --entrypoints.websecure2.http.tls.domains[0].main=apealive.net
+# - --entrypoints.websecure2.http.tls.domains[0].sans=*.apealive.net
+#
+- --accesslog=true
+env:
+  - name: CF_API_EMAIL
+    value: infra@apealive.net
+  - name: CF_DNS_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api
+        key: apealive-token
+persistence:
+  #enabled: fase # ie: during recovery/bootstrap
+  enabled: true
+  existingClaim: traefik0
+  path: /certs
+  size: 128Mi
+  #storageClass: longhorn-static
+  storageClass: microk8s-hostpath
+# Options for the main traefik service, where the entrypoints traffic comes from.
+service:
+    spec:
+      #externalTrafficPolicy: Cluster # default
+      loadBalancerIP: "172.31.5.34"
+    enabled: true
+    type: LoadBalancer
+    annotations: {}
+      # external-dns.alpha.kubernetes.io/hostname: "ipv4.${SECRET_DOMAIN}"
+    #loadBalancerSourceRanges:
+    # - 172.31.5.0/28
+    externalIPs:
+    - 172.31.5.11
+    - 172.31.2.11
+    - 172.31.1.11
+    - 192.168.124.1
+ports:
+  traefik:
+    expose: false
+  web:
+    redirectTo: websecure
+  web2:
+   port: 8200
+   exposedPort: 8080
+   expose: true
+   redirectTo: websecure
+  websecure:
+     port: 8443
+     exposedPort: 443
+     #http3: true # experimental
+     expose: true
+     tls:
+       enabled: true
+       certResolver: cloudflare
+       domains:
+       - main: apealive.net
+         sans:
+         - "*.apealive.net"
+  websecure2:
+     port: 8243
+     exposedPort: 8443
+     #http3: true # experimental
+     redirectTo: websecure               # FIXME, vs. def. below
+     expose: true
+     # tls:
+     #   enabled: true
+     #   certResolver: cloudflare
+     #   domains:
+     #   - main: apealive.net
+     #     sans:
+     #     - "*.apealive.net"
+  ssh:
+      #protocol: TCP
+      port: 8222
+      exposedPort: 22
+      expose: true
+
+  metrics:
+      port: 8082
+      expose: true
+      exposedPort: 8082
+
+ingressRoute:
+  enabled: true
+  dashboard:
+    enabled: true
+    annotations: {}
+    labels: {}
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+  fallbackApiVersion: v1
+
+tlsOptions:
+  default:
+    minVersion: VersionTLS12
+    maxVersion: VersionTLS13
+    sniStrict: true
+
+pilot:
+  enabled: false
+
+logs:
+    general:
+        format: json
+    access:
+        enabled: true
+        format: json
+
+metrics:
+    prometheus:
+        enabled: true
+        entryPoint: metrics
+
+affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                   - traefik
+            topologyKey: "kubernetes.io/hostname"
+
+## Create HorizontalPodAutoscaler object.
+autoscaling:
+    enabled: false
+#     minReplicas: 1
+#     maxReplicas: 10
+#     metrics:
+#     - type: Resource
+#       resource:
+#         name: cpu
+#         targetAverageUtilization: 60
+#     - type: Resource
+#       resource:
+#         name: memory
+#         targetAverageUtilization: 60

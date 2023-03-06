@@ -1,0 +1,7 @@
+[
+  {
+    "name": "jellyfin",
+    "namespace": "media",
+    "cluster": "in-cluster"
+  }
+]

@@ -1,0 +1,167 @@
+---
+apiVersion: helm.fluxcd.io/v1
+kind: HelmRelease
+metadata:
+  name: traefik
+  namespace: traefik
+  annotations:
+    fluxcd.io/automated: "false"
+    fluxcd.io/tag.chart-image: semver:~v2.3.
+spec:
+  releaseName: traefik
+  rollback:
+    enable: false
+  chart:
+    repository: 
+    name: traefik
+    version: 9.5.0
+# VALUES
+  values:
+    traefik:
+      fullnameOverride: traefik
+      #image:
+      #  tag: "2.3.0"
+      globalArguments:
+        - "--global.checknewversion"
+       #- "--serverstransport.insecureskipverify=true"
+        - "--providers.kubernetesingress.ingressclass=traefik"
+     #  - "--providers.kubernetesIngress.ingressClass=traefik-cert-manager"
+        - "--entryPoints.websecure.http.tls=true"
+     #  - "--metrics.prometheus=true"
+        - "--metrics.prometheus.entryPoint=metrics"
+     #additionalArguments:
+     #  - "--log.level=DEBUG"
+     #  - "--accesslog=true"
+     #  - "--accesslog.format=json"
+     #  - "--ping"
+     #  - "--metrics.prometheus=true"
+     #  - "--metrics.prometheus.entryPoint=metrics"
+     #  - "--entryPoints.metrics.address=:8082"
+      service:
+        spec:
+          externalTrafficPolicy: Local
+      ports:
+        web:
+          redirectTo: websecure
+        metrics:
+          port: 8082
+          expose: true
+          exposedPort: 8082
+      ingressRoute:
+        dashboard:
+          enabled: true
+      ingressClass:
+        enabled: true
+        isDefaultClass: true
+      pilot:
+        enabled: true
+      logs:
+        general:
+          format: json
+        access:
+          enabled: true
+          format: json
+      metrics:
+        prometheus:
+          enabled: true
+          entryPoint: metrics
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - traefik
+                topologyKey: kubernetes.io/hostname
+      # Options for the main traefik service, where the entrypoints traffic comes from.
+      service:
+        enabled: true
+        type: LoadBalancer
+        # Additional annotations (e.g. for cloud provider specific config)
+        annotations: {}
+        # Additional entries here will be added to the service spec. Cannot contains
+        # type, selector or ports entries.
+        spec: {}
+          # externalTrafficPolicy: Cluster
+          # loadBalancerIP: "1.2.3.4"
+          # clusterIP: "2.3.4.5"
+        loadBalancerSourceRanges: []
+          # - 192.168.0.1/32
+          # - 172.16.0.0/16
+        externalIPs:
+           - 192.168.124.1
+      # Use ingressClass. Ignored if Traefik version < 2.3 / kubernetes < 1.18.x
+      ingressClass:
+        # true is not unit-testable yet, pending https://github.com/rancher/helm-unittest/pull/12
+        enabled: false
+        isDefaultClass: false
+      # Create an IngressRoute for the dashboard
+      ingressRoute:
+        dashboard:
+          enabled: true
+          # Additional ingressRoute annotations (e.g. for kubernetes.io/ingress.class)
+          annotations: {}
+          # Additional ingressRoute labels (e.g. for filtering IngressRoute by custom labels)
+          labels: {}
+          ## Create HorizontalPodAutoscaler object.
+          autoscaling:
+            enabled: false
+#         minReplicas: 1
+#         maxReplicas: 10
+#         metrics:
+#         - type: Resource
+#           resource:
+#             name: cpu
+#             targetAverageUtilization: 60
+#         - type: Resource
+#           resource:
+#             name: memory
+#             targetAverageUtilization: 60
+
+    tfa:
+      replicaCount: 0
+      fullnameOverride: traefik-forward-auth
+      cookie:
+        domain: "apealive.net" #comma separateed
+#     logging:
+#       level: debug
+#       format: json
+#     providers:
+#       google:
+#         enabled: true
+#     middleware:
+#       enabled: true
+#       name: "google-auth"
+      secret: "-"
+#     env:
+#       - name: SECRET
+#         valueFrom:
+#           secretKeyRef:
+#             name: traefik-forward-auth
+#             key: secret
+#       - name: PROVIDERS_GOOGLE_CLIENT_ID
+#         valueFrom:
+#           secretKeyRef:
+#             name: traefik-forward-auth
+#             key: google-client-id
+#       - name: PROVIDERS_GOOGLE_CLIENT_SECRET
+#         valueFrom:
+#           secretKeyRef:
+#             name: traefik-forward-auth
+#             key: google-client-secret
+#       - name: WHITELIST
+#         valueFrom:
+#           secretKeyRef:
+#             name: traefik-forward-auth
+#             key: whitelist
+##      - name: INSECURE_COOKIE
+##        value: "true"
+#     ingress:
+#       enabled: true
+#       annotations:
+#         traefik.ingress.kubernetes.io/router.entrypoints: websecure
+#         traefik.ingress.kubernetes.io/router.priority: "50"

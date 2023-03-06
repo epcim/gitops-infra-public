@@ -1,0 +1,121 @@
+# https://github.com/toboshii/hajimari/blob/main/charts/hajimari/values.yaml
+# icons: https://materialdesignicons.com/
+installCRDs: true
+#fullnameOverride: *nm
+
+image:
+  tag: latest
+
+hajimari:
+  name: "APE"
+  defaultEnable: true
+  namespaceSelector:
+    matchNames:
+      - sys
+      - mon
+      - media
+      - iot
+      - home
+      - gitops
+      - game
+  customApps:
+  - name: Gitea
+    icon: gitea
+    url: 'https://gitea.apealive.net'
+  - name: Argo
+    icon: argocd
+    url: 'https://argocd.apealive.net'
+  - name: Longhorn
+    icon: longhorn
+    url: 'https://longhorn.apealive.net'
+
+  # groups: []
+  groups:
+  - name: Cloud
+    links:
+    - name: Gmail
+      url: 'http://gmail.com'
+    - name: gDrive
+      url: 'https://drive.google.com'
+    - name: iCloud
+      url: 'https://icloud.com'
+    - name: Dropbox
+      url: 'https://dropbox.com'
+  - name: Media
+    links:
+    - name: iVysilani
+      url: 'https://www.ceskatelevize.cz/ivysilani/'
+    - name: Spotify
+      url: 'http://browse.spotify.com'
+    - name: YouTube
+      url: 'https://youtube.com/feed/subscriptions'
+  - name: Reading
+    links:
+    - name: Zive.cz
+      url: 'https://www.zive.cz/'
+    - name: Seznamzpravy.cz
+      url: 'https://www.seznamzpravy.cz'
+  - name: Tech
+    links:
+    - name: Acond TC
+      url: 'http://192.168.96.3'
+    - name: Rekuperace
+      url: 'http://192.168.96.4'
+    - name: Router
+      url: 'http://172.31.1.1'
+
+
+env:
+  TZ: "Erurope/Prague"
+
+persistence:
+  data:
+    enabled: true
+    #existingClaim: hajimari-data
+    storageClass: longhorn-static
+    accessMode: ReadWriteOnce
+    size: 200Mi
+
+podAnnotations:
+  configmap.reloader.stakater.com/reload: "hajimari-settings"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128M
+
+ingress:
+  main:
+    enabled: true
+    ingressClassName: "traefik"
+    annotations:
+      #kubernetes.io/ingress.class: "traefik"
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      #traefik.ingress.kubernetes.io/router.middlewares: system-ingress-rfc1918-ips@kubernetescrd
+      hajimari.io/enable: "true"
+      hajimari.io/icon: shield-check
+      hajimari.io/group: network
+      hajimari.io/appName: hajimari
+    hosts:
+    - host: hajimari.apealive.net
+      paths:
+      - path: /
+        pathType: Prefix
+    - host: portal.apealive.net
+      paths:
+      - path: /
+        pathType: Prefix
+    - host: p.apealive.net
+      paths:
+      - path: /
+        pathType: Prefix
+
+    tls:
+    - hosts:
+       - hajimari.apealive.net
+       - portal.apealive.net
+       - p.apealive.net
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

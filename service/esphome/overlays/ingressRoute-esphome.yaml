@@ -1,0 +1,30 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: esphome
+  namespace: &namespace iot
+spec:
+  entryPoints:
+  - web
+  - websecure
+  routes:
+  - kind: Rule
+    match: HostRegexp(`esphome.apealive.{tld:(local|net)}`)  #& PathPrefix(`/foo`)
+    priority: 10
+    services:
+    - name: esphome
+      port: 6052
+      namespace: *namespace
+# - kind: Rule
+#   match: Host(`esphome.apealive.local`) && Headers(`Content-Type`, `application/grpc`)
+#   priority: 11
+#   services:
+#   - name: esphome
+#     port: 8123
+#     scheme: h2c
+#     namespace: *namespace
+  tls:
+    domains:
+    - main: apealive.net
+      sans:
+      - esphome.apealive.net

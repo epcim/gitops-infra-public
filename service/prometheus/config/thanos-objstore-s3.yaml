@@ -1,0 +1,6 @@
+type: s3
+config:
+  bucket: thanos
+  endpoint: ams3.digitaloceanspaces.com
+  access_key: XXX
+  secret_key: XXX

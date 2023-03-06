@@ -1,0 +1,14 @@
+helmChart:
+  # renovate: registryUrl=https://grafana.github.io/helm-charts
+  repo: https://grafana.github.io/helm-charts
+  chartName: loki
+  chartVersion: 2.11.1
+  releaseName: loki
+
+  namespace: log
+  skipCRDs: false
+  skipPrePull: true
+  #skipUpdate: false
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

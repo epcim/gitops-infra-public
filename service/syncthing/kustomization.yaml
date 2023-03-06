@@ -1,0 +1,108 @@
+
+namespace: home
+
+generators:
+  - |-
+    apiVersion: v1
+    kind: RenderHelmChart
+    metadata:
+      name: demo
+      annotations:
+        config.kubernetes.io/function: |
+          container:
+            network: true
+            #image: us.gcr.io/k8s-artifacts-prod/krm-functions/render-helm-chart:unstable
+            image: gcr.io/kpt-fn/render-helm-chart:v0.1.0
+
+    helmCharts:
+    # renovate: registryUrl=https://k8s-at-home.com/charts/
+    - name: syncthing
+      version: 3.4.2
+      repo: https://k8s-at-home.com/charts/
+      includeCRDs: true
+      releaseName: syncthing
+      namespace: home
+      valuesInline:
+
+        # https://github.com/k8s-at-home/charts/blob/master/charts/stable/syncthing/values.yaml
+        persistence:
+          data:
+            enabled: true
+            storageClass: "microk8s-hostpath"
+            size: 10Gi
+            accessMode: ReadWriteOnce
+
+        service:
+          main:
+            ports:
+              http:
+                port: 8384
+          listen:
+            enabled: true
+            type: LoadBalancer
+            # https://kubernetes.io/docs/tutorials/services/source-ip/
+            externalTrafficPolicy: Local # Cluster
+            ports:
+              listen:
+                enabled: true
+                port: 22000
+                protocol: TCP
+                targetPort: 22000
+          discovery:
+            enabled: true
+            type: LoadBalancer
+            externalTrafficPolicy: Local # Cluster
+            ports:
+              discovery:
+                enabled: true
+                port: 21027
+                protocol: UDP
+                targetPort: 21027
+
+        ingress:
+          main:
+            enabled: true
+            ingressClassName: "traefik"
+            annotations:
+               traefik.ingress.kubernetes.io/router.entrypoints: websecure
+               traefik.ingress.kubernetes.io/router.tls: "true"
+               traefik.ingress.kubernetes.io/preserve-host: "true"
+               ingress.kubernetes.io/whitelist-x-forwarded-for: "true"
+               hajimari.io/enable: "true"
+               hajimari.io/icon: cloud-sync
+               hajimari.io/group: network
+               hajimari.io/appName: syncthing
+            hosts:
+            - host: sync.apealive.net
+              paths:
+              - path: /
+                pathType: Prefix
+            tls:
+            - hosts:
+               - sync.apealive.net
+          listen:
+            enabled: true
+            ingressClassName: "traefik"
+            annotations:
+               traefik.ingress.kubernetes.io/router.entrypoints: websecure
+               traefik.ingress.kubernetes.io/router.tls: "true"
+               traefik.ingress.kubernetes.io/preserve-host: "true"
+               ingress.kubernetes.io/whitelist-x-forwarded-for: "true"
+               hajimari.io/enable: "false"
+            hosts:
+            - host: syncthing.apealive.net
+              paths:
+              - path: /
+                pathType: Prefix
+                service: 
+                  name: syncthing-listen
+                  port: 22000
+            tls:
+            - hosts:
+               - syncthing.apealive.net
+
+
+
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

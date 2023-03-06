@@ -1,0 +1,95 @@
+
+namespace: gitops
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+#commonLabels:
+#  app.kubernetes.io/instance: argocd
+
+#bases:
+#- https://github.com/argoproj/argo-cd//manifests/cluster-install
+#- https://github.com/argoproj/argo-cd//manifests/cluster-install?ref=v1.8.1
+
+resources:
+# CLUSTER INSTALL
+- https://raw.githubusercontent.com/argoproj/argo-cd/master/manifests/install.yaml
+#- https://raw.githubusercontent.com/argoproj-labs/applicationset/stable/manifests/install.yaml
+#- https://raw.githubusercontent.com/argoproj/applicationset/master/manifests/install.yaml
+
+- ./config/appSet.yaml
+
+# # INGRESS
+- ./overlay/ingressRoute.yaml
+
+# TODO, remove
+# # SECRETS
+# - ./secret/repo-apealive.yaml
+# - ./secret/repo-github.yaml
+# # APPS
+# - ./deploy/applicationSet-core.yaml
+# - ./deploy/applicationSet-apps.yaml
+
+# patches:
+#   # Hacky way to disable the default secret
+#   - target:
+#       kind: Secret
+#       name: argocd-notifications-secret
+#     patch: |-
+#       - op: replace
+#         path: /metadata/name
+#         value: argocd-notifications-secret-dandling
+
+configMapGenerator:
+- name: argocd-cm
+  behavior: merge
+  envs:
+  - config/kustomize.yaml
+
+patchesJson6902:
+- target:
+    version: v1
+    kind: Deployment
+    name: argocd-server
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/command
+      value:
+         - argocd-server
+         - --insecure
+         - --staticassets
+         - /shared/app
+
+#patchesStrategicMerge:
+#- |-
+#  apiVersion: apps/v1
+#  kind: Deployment
+#  metadata:
+#    name: argocd-server
+#  spec:
+#    template:
+#      spec:
+#        containers:
+#        - name: argocd-server
+#          env:
+#            - name: ARGOCD_GIT_MODULES_ENABLED
+#              value: "false"
+#- |-
+#  apiVersion: apps/v1
+#  kind: Deployment
+#  metadata:
+#    name: argocd-repo-server
+#  spec:
+#    template:
+#      spec:
+#        containers:
+#        - name: argocd-repo-server
+#          env:
+#            - name: ARGOCD_GIT_MODULES_ENABLED
+#              value: "false"
+
+
+
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

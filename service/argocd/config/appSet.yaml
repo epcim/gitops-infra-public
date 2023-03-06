@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-apps
+  namespace: gitops
+spec:
+  generators:
+  - git:
+      files:
+      - path: services/**/argo-apps.json
+      repoURL: git@git.apealive.net:epcim/infra.git
+      revision: HEAD
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+  template:
+    metadata:
+      annotations:
+        argocd.argoproj.io/manifest-generate-paths: "/{{ path }}/.."
+        argocd.argoproj.io/sync-options: Prune=false
+      name: "{{ name }}"
+    spec:
+      destination:
+        name: "{{ cluster }}"
+        namespace: "{{ namespace }}"
+      project: default
+      source:
+        path: "{{ path }}/.."
+        plugin:
+          env:
+          - name: ENV
+            value: apealive
+          - name: DOMAIN
+            value: apealive.net
+        repoURL: git@git.apealive.net:epcim/infra.git
+        targetRevision: HEAD
+      syncPolicy:
+        automated: {}
+        syncOptions:
+        - ApplyOutOfSyncOnly=false
+      ignoreDifferences:
+      - group: "*"
+        kind: "*"
+        jsonPointers:
+        - /spec/metadata/annotations
+
+
+
+

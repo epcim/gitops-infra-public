@@ -1,0 +1,7 @@
+[
+  {
+    "name": "metallb",
+    "namespace": "sys",
+    "cluster": "in-cluster"
+  }
+]

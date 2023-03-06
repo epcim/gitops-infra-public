@@ -1,0 +1,13 @@
+helmChart:
+  # renovate: registryUrl=https://hajimari.io
+  repo: https://hajimari.io
+  chartName: &nm hajimari
+  chartVersion: 2.0.2
+  releaseName: *nm
+
+  skipCRDs: false
+  skipPrePull: true
+  #skipUpdate: false
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

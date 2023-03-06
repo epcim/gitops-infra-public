@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: syncthing
+  namespace: argocd
+spec:
+  sourceType: Kustomize
+  project: default
+  destination:
+    namespace: home
+    server: https://kubernetes.default.svc
+  source:
+    path: clusters/apealive/home/syncthing
+    repoURL: https://git.apealive.net/epcim/infra.git
+    targetRevision: HEAD
+    #kustomize:
+      # Optional kustomize version. Note: version must be configured in argocd-cm ConfigMap
+      #version: v3.5.4
+      #namePrefix: prod-
+      #images:
+  #syncPolicy:
+    #automated:
+    #  prune: true
+    #  selfHeal: false
+    #syncOptions:
+    #- CreateNamespace=true

@@ -1,0 +1,31 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: hass-server
+  namespace: home
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: HostRegexp(`hass.apealive.{tld:(local|net)}`)  #& PathPrefix(`/foo`)
+    priority: 10
+    services:
+    - name: hass-home-assistant
+      port: 8123
+      namespace: home
+  - kind: Rule
+    match: HostRegexp(`hass.apealive.{tld:(local|net)}`) && Headers(`Content-Type`, `application/grpc`)
+    priority: 11
+    services:
+    - name: hass-home-assistant
+      port: 8123
+      scheme: h2c
+      namespace: home
+  tls:
+    domains:
+      - main: apealive.net
+        sans:
+        - h.apealive.net
+        - hass.apealive.net
+        - homeassistant.apealive.net

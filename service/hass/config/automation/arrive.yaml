@@ -1,0 +1,90 @@
+- alias: Parents arrive home
+  description: 'When Parrents arrives home, alert kids and open main gate'
+  mode: single
+  condition:
+  - condition: time
+    after: '07:00:00'
+    before: '22:00:00'
+  trigger:
+    - platform: state
+      entity_id: person.adrika
+      to: 'home'
+    - platform: state
+      entity_id: person.petr
+      to: 'home'
+    - platform: state
+      entity_id: person.petr_2
+      to: 'home'
+    - platform: state
+      entity_id: person.epcim
+      to: 'home'
+# - platform: zone
+#   entity_id:
+#      - person.petr
+#      - person.adrika
+#   zone: zone.home
+  action:
+    - data:
+        entity_id: switch.brana
+      service: switch.turn_on
+# switch turn off itself automatically
+#- delay:
+#    milliseconds: 500
+#- data:
+#    entity_id: switch.brana
+#    service: switch.turn_off
+    - service: tts.google_say
+      data:
+        entity_id: all
+        message: "Pozor! Rodiče už jsou doma."
+
+- alias: Kids arrive home
+  description: 'When Kids arrives or just start mobile device'
+  mode: single
+  condition:
+  - condition: time
+    after: '12:00:00'
+    before: '18:00:00'
+  trigger:
+    - platform: state
+      entity_id: person.mikulas
+      to: 'home'
+    - platform: state
+      entity_id: person.stepan
+      to: 'home'
+  action:
+    - data:
+        entity_id: switch.brana
+      service: switch.turn_on
+    - service: tts.google_say
+      data:
+        entity_id: all
+        message: "Hej rodiče! Děcka jdou domu."
+
+
+- alias: Grandparents visit
+  description: 'When Grandparents arrives, open main gate'
+  mode: single
+  condition:
+  - condition: time
+    after: '08:00:00'
+    before: '20:00:00'
+  trigger:
+    - platform: state
+      entity_id: person.lada
+      to: 'home'
+    - platform: state
+      entity_id: person.zdenka
+      to: 'home'
+    - platform: state
+      entity_id: person.vierka
+      to: 'home'
+  action:
+    - data:
+        entity_id: switch.brana
+      service: switch.turn_on
+    - service: tts.google_say
+      data:
+        entity_id: all
+        message: "Hej vy doma! Otevírám bránu návštěvě."
+

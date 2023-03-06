@@ -1,0 +1,46 @@
+#$patch: merge
+kind: ConfigMap
+metadata:
+  name: longhorn-storageclass
+  namespace: sys
+data:
+  storageclass.yaml: |
+    kind: StorageClass
+    apiVersion: storage.k8s.io/v1
+    metadata:
+      name: longhorn
+      annotations:
+        storageclass.kubernetes.io/is-default-class: "true"
+    provisioner: driver.longhorn.io
+    allowVolumeExpansion: true
+    reclaimPolicy: "Delete"
+    volumeBindingMode: Immediate
+    parameters:
+      numberOfReplicas: "3"
+      staleReplicaTimeout: "30"
+      fromBackup: ""
+      # backup volumes (at 2am)
+      # once 7d: 0 2 1/7 * *
+      # daily:   0 2 * * *
+      recurringJobs: '[
+        {
+          "name":"snap",
+          "task":"snapshot",
+          "cron":"0 2 * * *",
+          "retain": 7
+        },
+        {
+          "name":"backup",
+          "task":"backup",
+          "cron":"0 2 1/7 * ?",
+          "retain": 4
+        }
+      ]'
+#apiVersion: v1
+# metadata:
+#   labels:
+#     app.kubernetes.io/instance: longhorn
+#     app.kubernetes.io/managed-by: Helm
+#     app.kubernetes.io/name: longhorn
+#     #app.kubernetes.io/version: v1.2.0
+#     #helm.sh/chart: longhorn-1.2.0

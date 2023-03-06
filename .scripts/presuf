@@ -1,0 +1,16 @@
+#!/bin/bash -e
+
+# presuffix (add $1 before actual suffix of the file ($2))
+presuffix() {
+
+  pres=$1
+  file=$2
+
+  ex=".${file##*.}";
+  fp="${file%.*}";
+  dest="$fp$pres$ex";
+
+  echo ${dest}
+}
+
+presuffix $@

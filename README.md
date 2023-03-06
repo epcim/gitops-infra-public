@@ -12,6 +12,17 @@
 - In 2023 I reworked the structure to better fit [kluctl.io](https://kluctl.io) which best fits all
   my needs identified in past few years. More on its features here [kluctl.io/blog](https://kluctl.io/blog/).
 
+## DISCLAIMER
+
+As of `2023/03` there are still manny things in-progress or in re-design. Even though I use the private copy of this repo
+daily on my deployments. Main structure wont change, but I will move all target specific logic under target directory
+and free this way `services` directory to be more re-usable. 
+
+Independent configuration of services is not implemented at all.
+
+Metal bootstrap is subject to rework. I will use [tinkerbell.org](tinkerbell.org)/iPXE for the physical part.
+For the nodes I use today this [ansible repo](https://github.com/epcim/ansible-infra).
+
 ## Concept and features:
 
 - Metal bootstrap

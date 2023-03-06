@@ -1,0 +1,12 @@
+helmChart:
+  # renovate: registryUrl=https://bjw-s.github.io/helm-charts
+  repo: https://bjw-s.github.io/helm-charts
+  chartName: app-template
+  chartVersion: {{ helm.bjws.chartVersion | default("1.3.2") }}
+  releaseName: esphome
+    
+  namespace: iot
+  skipCRDs: false
+  skipPrePull: true
+  #skipUpdate: false
+

@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: home-assistant
+  namespace: argocd
+spec:
+  sourceType: Helm
+  project: default
+  destination:
+    namespace: home
+    server: https://kubernetes.default.svc
+    #server: https://k8s.apealive.net:16443
+  source:
+    path: home/home-assistant
+    repoURL: git@github.com:epcim/gitops-fleet.git
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+      - values.yaml
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false
+    syncOptions:
+    - CreateNamespace=true

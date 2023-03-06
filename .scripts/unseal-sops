@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# sops-unseal, decrypt files (while removing `.enc.` file.enc.suffix)
+sops-unseal() {
+  for file in $(ls $@); do
+  ex=".${file##*.}";
+  fp="${file%.enc*}";
+  #[[ "$ex" == ".$fp" ]] && ex="" # fix, no filename suffix
+  dest="$fp${ex#.enc}";
+
+  echo "  ${dest}";
+	sops -d --config ${SOPS_CONFIG:-.sops.yaml} --output "$dest" "$file"; \
+  done
+}
+
+sops-unseal $@
+

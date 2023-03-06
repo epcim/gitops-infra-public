@@ -1,0 +1,36 @@
+
+namespace: &ns home
+
+commonLabels:
+  app: octoprint
+
+replicas:
+- name: octoprint
+  count: 1
+
+resources:
+- helm-rendered.yaml
+#- overlays/ingressRoute.yaml
+
+patchesJson6902:
+- target:
+    version: .*
+    kind: (StatefulSet|Deployment)
+    name: octoprint.*
+    #labelSelector: app=octoprint
+  patch: |-
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value: 
+          feature.node.kubernetes.io/3dprinter: prusa-mini
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            memory: "128Mi"
+            cpu: "0.2"
+          limits:
+            memory: "512Mi"
+
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

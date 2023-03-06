@@ -1,0 +1,9 @@
+- id: '1626953266895'
+  alias: Mikulas left
+  description: (from home)
+  use_blueprint:
+    path: homeassistant/notify_leaving_zone.yaml
+    input:
+      person_entity: person.mikulas
+      zone_entity: zone.home
+      notify_device: ba49806f5d9c11eb8b72d5fc6dbd0273

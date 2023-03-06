@@ -1,0 +1,27 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: &nm syncthing
+  namespace: &ns home
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: HostRegexp(`syncthing.apealive.{tld:(local|home|net)}`)
+    priority: 10
+    services:
+    - name: syncthing-main
+      port: 8384
+      namespace: *ns
+    - name: syncthing-listen
+      port: 22000
+      namespace: *ns
+    - name: syncthing-discovery
+      port: 21027
+      namespace: *ns
+tls:
+  domains:
+  - main: apealive.net
+    sans:
+    - syncthing.apealive.net

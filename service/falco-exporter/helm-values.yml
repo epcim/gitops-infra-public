@@ -1,0 +1,11 @@
+grafanaDashboard:
+  enabled: true
+  namespace: mon
+  #prometheusDatasourceName: Prometheus
+prometheusRules:
+  enabled: true
+serviceMonitor:
+  enabled: true
+podSecurityPolicy:
+  create: false
+

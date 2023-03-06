@@ -1,0 +1,21 @@
+namespace: mon
+
+#commonLabels:
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+- helm-rendered.yaml
+# RULES
+# FIXME, kluctl generator, render with sjsonnet
+- ./prometheus-rules/node-exporter.yaml
+- ./prometheus-rules/loki.yaml
+#- ./prometheus-rules/upsc.yaml
+
+# secretGenerator:
+# - name: thanos-objstore-secret
+#   files:
+#   - config/thanos-objstore-filesystem.yaml
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

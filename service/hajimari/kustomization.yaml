@@ -1,0 +1,11 @@
+# https://hajimari.io
+
+namespace: &ns home
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+resources:
+- helm-rendered.yaml
+
+# vim: ft=yaml syntax=yaml sts=2 ts=2 sw=2

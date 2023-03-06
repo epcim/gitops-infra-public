@@ -1,0 +1,28 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: &nm octoprint
+  namespace: &ns home
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: HostRegexp(`{app:(octoprint)}.apealive.{tld:(local|home|net)}`)
+    priority: 10
+    services:
+    - name: octoprint
+      port: 80
+      namespace: *ns
+    # - name: octoprint-listen
+    #   port: 22000
+    #   namespace: *ns
+    # - name: octoprint-discovery
+    #   port: 21027
+    #   namespace: *ns
+  tls:
+    certResolver: cloudflare
+    domains:
+    - main: apealive.net
+      sans:
+      - octoprint.apealive.net

@@ -1,0 +1,7 @@
+[
+  {
+    "name": "traefik",
+    "namespace": "sys",
+    "cluster": "in-cluster"
+  }
+]
