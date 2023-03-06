@@ -55,24 +55,25 @@ POSTPONED:
 ├── compose                           - reusable components, overlays
 │
 ├── serivce                           - app manifests
+│   ├── deployment.yml                - Kluctl.io sub/deployment
 │   ├── restic
 │   │   ├── configs
 │   │   ├── secrets
 │   │   ├── overlays
 │   │   ├── kustomization.yaml
-│   ├── deployment.yml                    - Kluctl.io deployment targets
 │
 ├── targets
 │   ├── base
 │   ├── lab1
+│   │   ├── deployment.yml            - Kluctl.io sub/deployment
 │   │   ├── <namespace>
-│   │       ├── <app instance>
+│   │   │   ├── <app instance>
 │
 ├── .envrc                            - env configuration
 ├── .kluctl.yml                       - Kluctl.io project
 ├── deployment.yml                    - Kluctl.io deployment targets
-├── context.yml -> <target>/          - parameters
-├── secrets.yml -> <target>/          - secrets (SOPS encrypted)
+├── context.yml -> <target>/<name>/   - parameters
+├── secrets.yml -> <target>/<name>/   - secrets (SOPS encrypted)
 │
 ├── Makefile                          - (local use only, shortcuts, optional)
 ├── .scripts                          - last sort of escape hell from rutines
