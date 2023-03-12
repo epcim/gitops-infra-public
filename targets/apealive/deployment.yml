@@ -1,5 +1,24 @@
+# https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
+---
 deployments:
-#- path: argocd
+# default services
+{% for s in params.keys() %}
+  - path: ../../service/{{ s }}
+    #onlyRender: true
+{% endfor %}
+
+# tailored per-cluster deployments
+#
+# EXAMPLE/TEST, actually this seems to be wrong way, as unable to change all metedata/name
+# with pure Kustomize (ie, PVCs has suffixes) => once more: Kustomize bases is bad pattern
+  # - path: media/jellyfin-test
+  #   vars:
+  #   - values:
+  #       compose: ../../../../compose
+  #       service: ../../../../service
+
+
+
 
 
 

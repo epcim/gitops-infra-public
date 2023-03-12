@@ -16,52 +16,81 @@ helm:
     # https://library-charts.truecharts.org
     chartVersion: 11.1.2
 
-# enabled services
-services:
-  {% if args.oneshot %}
-  - {{ args.oneshot }}
-  {% else %}
-  - adguard
-  - argocd
-  - esphome
-  - falco
-  - falco-exporter
-  - gita
-  - grafana
-  - hajimari
-  - hass
-  - jellyfin
-  - prometheus
-  - influxdb
-  - loki
-  - minio-backup
-  - octoprint
-  {% endif %}
-  # TODO switch:
-  # - longhorn
-  # - metallb
-  # - node-feature-discover
-  # - syncthing
-  # - thanos
-  # - traefik
-  # - unifi
-  # TODO develop:
-  # - tinkerbell + dual DNS
-  # - restic
-  # - restic-server
+# stable services
+# UPDATE: DEPRECATEDL list of services is read as params.keys
+#services:
+#  - adguard
+#  - argocd
+#  - esphome
+#  - falco
+#  - falco-exporter
+#  - gitea
+#  - grafana
+#  - hajimari
+#  - hass
+#  - jellyfin
+#  - prometheus
+#  - influxdb
+#  - loki
+#  - minio-backup
+#  - octoprint
+#  - longhorn
+#  - thanos
+#  - traefik
+#  - unifi
+#  # TODO switch:
+#  #- syncthing
+#  # - metallb
+#  # - node-feature-discover
+#  # TODO develop:
+#  # - tinkerbell + dual DNS
+#  # - restic
+#  # - restic-server
 
 
 # parameters
 params: &params
+  adguard:
+    mamespace: sys
   argocd:
     bootstrap: false
     namespace: gitops
-  haas:
-    namespace: home
-  traefik:
-    namespace: kube-system
+  esphome:
+    namespace: iot
   falco:
     namespace: sec
+  hass:
+    namespace: home
+  hajimari:
+    namespace: home
+  gitea:
+    namespace: gitops
+  grafana:
+    namespace: mon
+  jellyfin:
+    namespace: media
+  prometheus:
+    namespace: mon
+  influxdb:
+    namespace: mon
+  loki:
+    namespace: mon
+  longhorn:
+    namespace: longhorn-system
+    backupstore:
+      nfs:
+        path: /longhorn
+        hostPath: /mnt/Backup/longhorn
+  minio-backup:
+    namespace: sys
+  octoprint:
+    namespace: home
+  thanos:
+    namespace: mon
+  traefik:
+    namespace: kube-system
+  unifi:
+    namespace: sys
 <<: *params
 
 

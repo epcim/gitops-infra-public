@@ -1,12 +1,13 @@
 # https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
 ---
 
-deployments:
-  # - path: {{compose}}
-  #   onlyRender: true
-{% for service in services %}
-  - path: {{ service }}
+deployments: []
+#  - path: longhorn
+# FIXME, this is temp. I will switch to include/exclude Tags
+{% for s in services %}
+  - path: {{ root }}/service/{{ s }}
 {% endfor %}
+
 
 # Example
 # deployemnts:

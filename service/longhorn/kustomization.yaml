@@ -7,10 +7,18 @@ commonLabels:
 commonAnnotations:
   prometheus.io/port: "9500"
 
+generatorOptions:
+ disableNameSuffixHash: true
+
 resources:
-- {{compose}}/kustomizeConfig.yaml
+- helm-rendered.yaml
+# FIXME, alternative- https://raw.githubusercontent.com/longhorn/longhorn/v1.2.6/deploy/longhorn.yaml
 - ./secret/backup.yaml
 - ./overlays/ingressRoute-longhorn.yaml
+- ./overlays/longhorn-nfs.yaml
+
+# enable nfs-client
+#- https://raw.githubusercontent.com/longhorn/longhorn/v1.2.6/deploy/prerequisite/longhorn-nfs-installation.yaml
 
 # FIXME, configmap merge: https://github.com/kubernetes-sigs/kustomize/issues/3787
 #patchesStrategicMerge:

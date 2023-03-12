@@ -4,28 +4,23 @@
 # when: some.var == "value"
 
 vars:
-# implicit defaults
-  - file: service/context.yml
+# implicit
+  - file: service/context.yml  # NOTE: in-evaluation
 # overrides
   - file: targets/{{ target.name }}/secrets.yml
   - file: targets/{{ target.name }}/context.yml
 # inline
   - values:
-      compose: ../../compose
       bootstrap: true
-
-      # to deploy single service only
-      #services:
-      #- argocd
-      
+      #root: ../.. # rel. path to project root (for specified deployments)
 
 deployments:
-  - path: compose
+  - path: compose              # NOTE: in-evaluation
     onlyRender: true
-  - include: targets/base
+  #- include: targets/base
   #- include: targets/monitoring
   - include: targets/{{ target.name }}
-  - include: service
+
 
 #commonLabels:
   #examples.kluctl.io/environment: "{{ args.environment }}"

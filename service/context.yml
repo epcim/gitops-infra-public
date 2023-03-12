@@ -1,5 +1,8 @@
 # RECORD ALL DEFAULTS USED
 
+
+#root: ../../../../../../../../../
+
 app:
   argo:
     bootstrap: false

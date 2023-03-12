@@ -6,9 +6,9 @@
 
 
 # ARGS
-# 't' as an kluctl.io 'target' flag
+# 't' as kluctl.io 'target' flag
 t ?= "$(ENV)"
-# 's' as an subpath shortcut to content, if not provaded deconstructed from ./_ file
+# 's' as service, "kluctl --include-tag", if not provided it is constructed from `_`
 s ?= $(shell test -e _ && realpath --relative-base "$$PWD" "_" | sed 's,service/,,')
 PTH=service/$(s)
 
@@ -16,11 +16,11 @@ PTH=service/$(s)
 
 # DEFAULTS
 BUILD_DIR := ./.build
-KLUCTL_BIN ?= kluctl
-KUBECTL_BIN ?= kubectl
-KUSTOMIZE_BIN ?= kustomize
+KLUCTL ?= kluctl
+KUBECTL ?= kubectl
+KUSTOMIZE ?= kustomize
 #COLORIZER_DIFF ?= bat --paging=never -pl diff
-COLORIZER_DIFF ?= colout '\|\ \+.*$$' green normal | colout '\|\ \-.*$$' red normal
+#COLORIZER_DIFF ?= colout '\|\ \+.*$$' green normal | colout '\|\ \-.*$$' red normal
 COLORIZER_READ ?= bat -p
 
 .PHONY: env help render build update diff force
@@ -37,20 +37,20 @@ workon:
 ## Kluctl shortcuts
 
 deploy-all: clean_build
-	@$(KLUCTL_BIN) deploy -t $(t) --render-output-dir $(BUILD_DIR)
+	@$(KLUCTL) deploy -t $(t) --render-output-dir $(BUILD_DIR)
 
 deploy-dry: workon clean_build
-	@$(KLUCTL_BIN) deploy -t $(t) --render-output-dir $(BUILD_DIR) -a oneshot=$(s) --dry-run | $(COLORIZER_DIFF)
+	$(KLUCTL) deploy -t $(t) --render-output-dir $(BUILD_DIR) --include-tag $(s) --dry-run
 
 apply: deploy
 deploy: workon clean_build
-	@$(KLUCTL_BIN) deploy -t $(t) --render-output-dir $(BUILD_DIR) -a oneshot=$(s) --replace-on-error --yes
+	@$(KLUCTL) deploy -t $(t) --render-output-dir $(BUILD_DIR) --include-tag $(s) --replace-on-error --yes
 
 render: workon clean_build
-	@$(KLUCTL_BIN) render -t $(t)  --render-output-dir $(BUILD_DIR) -a oneshot=$(s)
+	@$(KLUCTL) render -t $(t)  --render-output-dir $(BUILD_DIR) --include-tag $(s)
 
 diff: workon
-	@$(KLUCTL_BIN) diff -t $(t) --ignore-tags --ignore-labels --ignore-annotations --render-output-dir $(BUILD_DIR) -a oneshot=$(s) | $(COLORIZER_DIFF)
+	@$(KLUCTL) diff -t $(t) --ignore-tags --ignore-labels --ignore-annotations --render-output-dir $(BUILD_DIR) --include-tag $(s) | $(COLORIZER_DIFF)
 
 show: workon render
 	@find $(BUILD_DIR)/**/$(s) -name ".rendered.yml" | xargs $(COLORIZER_READ)

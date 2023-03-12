@@ -8,7 +8,10 @@ image:
 defaultSettings:
   defaultDataPath: "/var/lib/longhorn"
   backupTargetCredentialSecret: longhorn-backup
-  backupTarget: s3://longhorn@minio-backup.sys.svc.cluster.local:9000/
+  # S3
+  #backupTarget: s3://longhorn@minio-backup.sys.svc.cluster.local:9000/
+  # NFS
+  backupTarget: nfs://longhorn-nfs-svc.longhorn-system:{{ longhorn.backupstore.nfs.path }} 
   defaultReplicaCount: 3
   defaultLonghornStaticStorageClass: longhorn-static
   createDefaultDiskLabeledNodes: true

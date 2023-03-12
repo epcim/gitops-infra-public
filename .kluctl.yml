@@ -22,6 +22,6 @@ targets:
 args:
 - name: bootstrap
   default: false
-- name: singleshot # to install single service only
+- name: oneshot # to install single service only
   default: ""
 

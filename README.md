@@ -34,7 +34,7 @@ For the nodes I use today this [ansible repo](https://github.com/epcim/ansible-i
   - Interpolation and hooks based on `kluctl.io` features
   - Tend to use mostly Kustomize resources
   - Tend to Helm library charts before regular helm charts
-  - TO REWORK: Full gitops with ArgoCD/Flex (when deployed)
+  - TO REWORK: Full CICD with ArgoCD/Flux/[KluctlController](https://github.com/kluctl/flux-kluctl-controller)
   - Makefile wrapper
 
 - Model
@@ -126,15 +126,24 @@ And prepare `age` & `gpg` structure in repo as described in section "Secrets"
 
 ## Usage (kluctl)
 
-This is not `make` focused CI/Bootstrap! The idea is to transition to pure kubectl deployment (once all kustomize features settle there).
-
-TL;DR
+With Makefile shortcut:
 ```sh
 make help
 
+# specify target (as an layer)
+make t=base
+make apply
+
+# target set as $ENV and s= specify an single-shot service as kluctl --include-tag
 make s=jellyfin
 make make apply
 make [render|diff|deploy|...]
+```
+
+With pure kluctl:
+```
+kluctl deploy -t "base" --dry-run
+kluctl deploy -t "apealive"  --include-tag jellyfin --dry-run
 ```
 
 ## Usage (with kubectl)

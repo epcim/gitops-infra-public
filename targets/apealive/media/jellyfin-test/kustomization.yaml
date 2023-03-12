@@ -1,0 +1,12 @@
+namespace: {{ deploy.dir1 }}
+
+# NOTE: this is just an temp. test/example
+
+commonLabels:
+  ins: {{ deploy.ref0 }}
+  ref1: {{ deploy.ref1 }}
+  dir1: {{ deploy.dir1 }}
+
+#bases:
+bases:
+- {{ service }}/jellyfin
