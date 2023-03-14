@@ -41,7 +41,17 @@ patchesJson6902:
         # - longhorn-manager
         # - uninstall
         # - --force
- 
+- target:
+    version: .*
+    kind: (Deployment)
+    name: longhorn-nfs.*
+  patch: |-
+    - op: add
+      path: /spec/template/spec/nodeSelector
+      value: 
+        type: main
+
+
 
 # images:
 # - name: longhornio/longhorn-manager

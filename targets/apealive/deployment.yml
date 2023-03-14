@@ -9,21 +9,14 @@ deployments:
 
 # tailored per-cluster deployments
 #
-# EXAMPLE/TEST, actually this seems to be wrong way, as unable to change all metedata/name
-# with pure Kustomize (ie, PVCs has suffixes) => once more: Kustomize bases is bad pattern
-  # - path: media/jellyfin-test
-  #   vars:
-  #   - values:
-  #       compose: ../../../../compose
-  #       service: ../../../../service
-
-
-
-
-
-
-
-
-
-
+# EXAMPLE/TEST
+  # problem1: (better to link once for all from root deployment.yml)
+  # - path: ../../service/jellyfin -> ./build/0/service/jellyfin-1 ??
+  #   onlyRender: true
+  - path: media-test/jellyfin-test
+    vars:
+    - values:
+        compose: ../../../../compose
+        service: ../../../../service
+        namespace: whatever
 

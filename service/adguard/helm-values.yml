@@ -1,7 +1,7 @@
 fullnameOverride: adguard
 image:
    repository: adguard/adguardhome
-   tag: v0.107.25
+   tag: v0.107.26
 controller:
   replicas: 1
 
@@ -41,9 +41,16 @@ service:
   dns-tcp:
     enabled: false
     type: LoadBalancer
+    loadBalancerIP: {{ secrets.vip_adgrd_tcp }}
     ports:
       dns-tcp:
         port: 53
+    #    protocol: TCP
+    #    targetPort: 53
+    #externalTrafficPolicy: Local
+    externalIPs:
+    - 172.31.1.52
+    - 172.31.5.52
   dns-udp:
     enabled: true
     type: LoadBalancer
@@ -55,11 +62,11 @@ service:
         protocol: UDP
         targetPort: 53
     externalTrafficPolicy: Local
-    annotations:
-      metallb.universe.tf/allow-shared-ip: adguard-home-dns
+    annotations: # NOT VERIFIED
+      metallb.universe.tf/allow-shared-ip: adguard-dns-tcp
     externalIPs:
     - 172.31.1.53
-    - 172.31.2.53
+    - 172.31.5.53
 
 
 ingress:
@@ -163,9 +170,10 @@ config: |-
     rewrites:
     - domain: 'git.apealive.net'
       answer: {{ secrets.vip_gitea }}
-    - domain: '*.apealive.net'
-      answer: {{ secrets.vip_traef }}
-    #
+    # - domain: 'hass.apealive.net'
+    #   answer: {{ secrets.vip_traef }}
+    # - domain: '*.apealive.net'
+    #   answer: {{ secrets.vip_traef }}
     ##
     blocked_services: []
     local_domain_name: lan

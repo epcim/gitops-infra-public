@@ -1,7 +1,8 @@
 # RECORD ALL DEFAULTS USED
 
 
-#root: ../../../../../../../../../
+
+root: ../../../../../../../../../
 
 app:
   argo:

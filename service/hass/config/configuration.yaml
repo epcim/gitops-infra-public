@@ -13,7 +13,7 @@ logger:
   #   AIOGitHubAPI: debug
 
 homeassistant:
-  #internal_url: "http://172.31.5.11:8123"
+  internal_url: "https://hass.i.apealive.net"
   external_url: "https://hass.apealive.net"
 
 #frontend:
@@ -48,14 +48,9 @@ http:
     - 127.0.0.1
     - 172.16.0.0/16
     - 172.32.0.0/16
+    - 172.31.0.0/16
     - 10.1.0.0/16
     - ::1
-    #- 172.31.2.11
-    #- 172.31.5.11
-    #- 172.31.5.34
-    #- 10.1.174.113
-    #- 172.31.5.32/27
-    #- 10/8
 
 
 calendar:

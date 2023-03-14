@@ -3,8 +3,8 @@
 #discriminator: "kluctl-{{ target.name }}"
 
 targets:
-# common setup with cluster connfig & monitoring, applied independently
 - name: base
+  # context: # SOURCED FROM ENV. KUBECONFIG
   args:
     environment: prod
 
@@ -17,11 +17,19 @@ targets:
   context: kind-kind
   args:
     bootstrap: true
-    environment: test
+- name: virtual
+  context: kwok
+  args:
+    bootstrap: true
+
 
 args:
+- name: oneshot # to install single service only
+  default: ""
 - name: bootstrap
   default: false
 - name: oneshot # to install single service only
   default: ""
+- name: platform
+  default: microk8s
 

@@ -27,7 +27,7 @@ persistence:
 service:
   main:
     type: LoadBalancer
-    loadBalancerIP: 172.31.5.55
+    loadBalancerIP: 172.31.2.55
     primary: true
     ports:
       http:
@@ -36,7 +36,7 @@ service:
         nodePort: 8096
   # discovery:
   #   type: LoadBalancer
-  #   loadBalancerIP: 172.31.5.56
+  #   loadBalancerIP: 172.31.2.56
   #   ports:
   #     discovery:
   #       port: 1900

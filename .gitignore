@@ -12,3 +12,21 @@ backup*
 private
 
 
+# DEPRECATED
+# secrets
+.envrc.local
+.params.env
+**/_sec/*
+**/secret/*
+**/*.secret
+**/*.secret.*
+**/*-sealed
+#
+#
+metal
+.DS_Store
+**/*.bkp
+**/*.original
+**/*2del
+*~
+charts

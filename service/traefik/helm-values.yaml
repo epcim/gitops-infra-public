@@ -75,18 +75,19 @@ persistence:
 service:
     spec:
       #externalTrafficPolicy: Cluster # default
-      loadBalancerIP: "172.31.5.34"
+      loadBalancerIP: "172.31.2.50"
     enabled: true
     type: LoadBalancer
     annotations: {}
       # external-dns.alpha.kubernetes.io/hostname: "ipv4.${SECRET_DOMAIN}"
     #loadBalancerSourceRanges:
     # - 172.31.5.0/28
-    externalIPs:
-    - 172.31.5.11
-    - 172.31.2.11
-    - 172.31.1.11
-    - 192.168.124.1
+    # - 172.31.2.0/28
+    # externalIPs:
+    # - 172.31.5.
+    # - 172.31.2.
+    # - 172.31.1.
+    # - 192.168.124.1
 ports:
   traefik:
     expose: false

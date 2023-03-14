@@ -1,9 +1,10 @@
-namespace: &ns {{ jellyfin.namespace | default("media") }}
+namespace: &ns media
+               # if { namespace}  is used ^^ looks like clash here <class 'jinja2.utils.Namespace'>/Ingress/jellyfin: failed to patch <class 'jinja2.utils.Namespace'>/Ingress/jellyfin: namespaces "<class 'jinja2.utils.Namespace'>" not found
 
 commonLabels:
   app: jellyfin
-  tag0: {{ deploy.tag0 }}
-  dir1: {{ deploy.dir1 }}
+  #tag0: { deploy.tag0 }
+  #dir1: { deploy.dir1 }
 
 resources:
 - helm-rendered.yaml

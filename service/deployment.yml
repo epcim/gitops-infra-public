@@ -4,7 +4,7 @@
 deployments: []
 #  - path: longhorn
 # FIXME, this is temp. I will switch to include/exclude Tags
-{% for s in services %}
+{% for s in (services|default([])) %}
   - path: {{ root }}/service/{{ s }}
 {% endfor %}
 

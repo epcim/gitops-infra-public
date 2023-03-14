@@ -1,7 +1,9 @@
 # https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
+#
 # noOverride: true
 # ignoreMissing: true
 # when: some.var == "value"
+# alwaysDeploy: true
 
 vars:
 # implicit
@@ -17,6 +19,11 @@ vars:
 deployments:
   - path: compose              # NOTE: in-evaluation
     onlyRender: true
+
+  # DRAFT - EXAMPLE
+  - path: service/jellyfin
+    onlyRender: true
+
   #- include: targets/base
   #- include: targets/monitoring
   - include: targets/{{ target.name }}

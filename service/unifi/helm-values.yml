@@ -66,7 +66,7 @@ service:
     type: LoadBalancer
     # externalIPs:
     # - 172.31.5.37
-    loadBalancerIP: 172.31.1.31    # FIXME tady byla 5ka
+    loadBalancerIP: 172.31.1.51    # FIXME tady byla 5ka
     externalTrafficPolicy: Cluster # Bylo local, FIXME, # Cluster = source ip preservation
 
     ports:

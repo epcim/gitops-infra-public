@@ -2,5 +2,5 @@ address-pools:
    - name: default
      protocol: layer2
      addresses:
+     - 172.31.2.32/27
      - 172.31.5.32/27
-

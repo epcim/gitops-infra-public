@@ -81,6 +81,8 @@ params: &params
       nfs:
         path: /longhorn
         hostPath: /mnt/Backup/longhorn
+  metallb:
+    namespace: metallb
   minio-backup:
     namespace: sys
   octoprint:

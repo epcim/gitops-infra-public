@@ -55,9 +55,14 @@ ingress:
       paths:
       - path: /
         pathType: Prefix
+    - host: hass.i.apealive.net
+      paths:
+      - path: /
+        pathType: Prefix
     tls:
     - hosts:
       - hass.apealive.net
+      - hass.i.apealive.net
 
 
 resources:
@@ -90,13 +95,13 @@ addons:
         #nginx.ingress.kubernetes.io/auth-url: "https://auth.eviljungle.com/oauth2/auth"
         #nginx.ingress.kubernetes.io/auth-signin: https://auth.eviljungle.com/oauth2/start
       hosts:
-        - host: hass-vscode.apealive.net
+        - host: hass-vscode.i.apealive.net
           paths:
             - path: /
               pathType: Prefix
       tls:
         - hosts:
-            - hass-vscode.apealive.net
+            - hass-vscode.i.apealive.net
     volumeMounts:
     - name: config
       mountPath: /config

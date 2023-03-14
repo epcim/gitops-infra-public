@@ -5,12 +5,15 @@
 namespace: metallb
 
 resources:
-- github.com/metallb/metallb//manifests?ref=v0.11.0
+#PREV: - github.com/metallb/metallb//manifests?ref=v0.11.0
+- github.com/metallb/metallb/config/native?ref=v0.13.9
+- config/pool.yaml
 
-configMapGenerator:
-- name: config
-  files:
-    - config=config/apealive.yaml
+# DEPRE$CATED since 0.13.x
+# configMapGenerator:
+# - name: config
+#   files:
+#     - config=config/apealive.yaml
 
 generatorOptions:
   disableNameSuffixHash: true

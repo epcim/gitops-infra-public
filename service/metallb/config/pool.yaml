@@ -1,0 +1,30 @@
+# since 0.13.x
+#
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: l2-ip
+  namespace: metallb
+spec:
+  ipAddressPools:
+  - default-pool
+  - servers-pool
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default-pool
+  namespace: metallb
+spec:
+  addresses:
+   - 172.31.2.32/27
+   - 172.31.5.32/27
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: servers-pool
+  namespace: metallb
+spec:
+  addresses:
+   - 172.31.1.32/27

@@ -2,6 +2,7 @@ namespace: &namespace gitops
 service:
   ssh:
     type: LoadBalancer
+    loadBalancerIP: {{ secrets.vip_gitea }}
     port: "22"
     annotations:
       traefik.http.services.gitea_ssh.loadbalancer.server.port: 22
