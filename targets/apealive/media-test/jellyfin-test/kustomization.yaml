@@ -1,0 +1,26 @@
+namespace: {{ deploy.dir1 }}
+              # ^^ this would be deploymentItem.relDir[1]
+
+# NOTE: this is just an temp. test/example
+
+commonLabels:
+  ins: {{ deploy.ref0 }}   # ref. parrent deployment item reference (index: 0 is self/last)
+  ref1: {{ deploy.ref1 }}
+  dir1: {{ deploy.dir1 }}  # ref. path under deployment item (index: 0 is self/last)
+
+#bases:
+bases:
+- {{ service }}/jellyfin   # HERE is an issue, it's ../../../../service/jellyfin so it's out of the "deploymentItem" directory
+                           # but we dont copy any way the content to the build dir
+                           #
+                           # renderOnly: true - problem2: for whole `service` directory ist no-go (as it render all (even not used)
+                           #                    helm-cherts.
+                           #                  - problem3: the bases are not rendered automatically
+                           #                    (bad: cant use interpolation on services)
+                           #                    (good: services remain pure Kustomize resource)
+                           #
+                           #
+                           #                  ideas:
+                           #                  - as we check resource: helm-rendered.yaml, we could copy the path
+                           #                  - or we rather need some new flag, to copy only dependencies
+                           #                  - infact the directory need rendering (with current deploymentItem context)
