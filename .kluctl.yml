@@ -12,16 +12,11 @@ targets:
     ingress: traefik
 
 # for testing,
-# use `kwokctl --name local create cluster`
-- name: base
+# use `kwokctl --name example create cluster`
+- name: example
   #context: export KUBECOFIG="$HOME/.kwok/clusters/local/kubeconfig.yaml" # or $KUBECONFIG exported on .envrc.local
   args:
     env: example
-# use `kind create cluster`
-- name: kind-local
-  context: kind-kind
-  args:
-    env: ci
 
 discriminator: "kluctl-{{ target.name | slugify }}"
 
