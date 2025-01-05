@@ -1,4 +1,4 @@
-justfile
+
 set shell := ["bash", "-cu"]
 BUILD_DIR := ".build"
 TARGET := env('TARGET', 'kwok-local')

@@ -1,7 +1,7 @@
 deployments:
   #- include: ../library/service/gitea
   - git:
-      url: git@github.com:epcim/gitops-library.git
+      url: https://gitea.example.net/epcim/gitops-library.git
       subDir: service/gitea
     args: {{ args }}
     vars:

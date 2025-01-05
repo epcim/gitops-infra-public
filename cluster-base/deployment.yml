@@ -5,7 +5,7 @@ deployments:
 
   - git:
       subDir: service/metallb
-      url: git@github.com:epcim/gitops-library.git
+      url: https://gitea.example.net/epcim/gitops-library.git
     args: {{ args }}
     vars:
     - values:
@@ -13,7 +13,7 @@ deployments:
 
   - git:
       subDir: service/longhorn
-      url: git@github.com:epcim/gitops-library.git
+      url: https://gitea.example.net/epcim/gitops-library.git
     args: {{ args }}
     vars:
     - values:
@@ -22,7 +22,7 @@ deployments:
 
   - git:
       subDir: service/traefik
-      url: git@github.com:epcim/gitops-library.git
+      url: https://gitea.example.net/epcim/gitops-library.git
     args: {{ args }}
     vars:
     - values:
