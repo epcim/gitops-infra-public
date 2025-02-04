@@ -10,7 +10,7 @@ cicd:
       ssh:
         loadBalancerIP: {{ secrets.cluster.vip.gitea }}
     persistance:
-      storageClass: "longhorn-static"
+      storageClass: "longhorn"
     kustomize:
       namespace: gitops
 

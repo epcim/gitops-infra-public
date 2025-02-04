@@ -30,14 +30,12 @@ directories:
       url: git@github.com:bjw-s/helm-charts.git
       depth: 1
 
-
-#- path: .repos
-#  contents:
-#  - path: cicd-deployment
-#    git:
-#      url: git@gitlab.com:myorg/mysub/cicd-deployment.git
-#      ref: origin/master
-#      #ref: origin/testglue
+- path: .repos
+  contents:
+  - path: library
+    git:
+      url: git@github.com:epcim/gitops-library.git
+      ref: origin/main
 #  - path: sre-deployment
 #    git:
 #      url: git@gitlab.com:myorg/mysub/sre-deployment.git

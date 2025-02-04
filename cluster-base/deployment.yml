@@ -3,6 +3,7 @@ deployments:
   - path: ./kube-system
   - barrier: true
 
+  # with calico integration, https://metallb.io/configuration/calico/
   - git:
       subDir: service/metallb
       url: https://gitea.example.net/epcim/gitops-library.git
@@ -35,5 +36,5 @@ deployments:
           resources:
             - helm-rendered.yaml
             - ./overlays/cloudflare-api.yml
-            - ./overlays/ingressRoute.yaml
+            #- ./overlays/ingressRoute.yaml
 

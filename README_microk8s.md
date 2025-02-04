@@ -8,21 +8,69 @@
 Deployed and configured by:
 - https://github.com/epcim/ansible-infra
 
+
+### BGP
+
+- https://microk8s.io/docs/change-cidr#configure-calico-in-bgp-mode
+
 ### Firewall
 
 - https://github.com/canonical/microk8s/issues/2418
 
 ```sh
+sudo ufw allow in ssh
+sudo ufw allow in http
+sudo ufw allow in https
 sudo ufw allow in on cali+
 sudo ufw allow out on cali+
+sudo ufw allow in 16443
+sudo ufw allow 53/udp
+sudo ufw allow 53/tcp
+sudo ufw enable
+
+
+# not sure
+sudo ufw allow in on vxlan.calico && sudo ufw allow out on vxlan.calico
+sudo ufw allow from 127.0.1.0/8 to 10.152.183.1  port 443
+sudo ufw allow from 10.10.1.0/16 to 10.10.2.50  port 443
+sudo ufw allow from 10.10.1.0/16 to 10.152.183.1  port 443
+ss -ntlpa |grep 10.152.183.1
+k get svc -A
+curl -kL https://10.152.183.1/version
 ```
+
+```
+sudo ufw logging on 
+sudo tail -f /var/log/ufw.log
+sudo ufw logging off
+```
+
+```
+sudo tcpdump -i br0 port 443
+sudo wireshark -k -f 'icmp' -i enp1s0f0 -i wlp2s0
+
+
+microk8s kubectl get felixconfigurations default
+
+kube-apiserer
+--bind-address=0.0.0.0
+
+
+ip -c -br link
+ip -br -c route
+
+bridge -s vlan show
+```
+
 
 ### Nodes 
 
 #### Labels
 
 ```
-kubectl label nodes cmp1 type=main
+kubectl label nodes cmp5 type=main
+kubectl label nodes cmp5 longhorn=yes
+kubectl label nodes cmp5 feature.node.kubernetes.io/3dprinter=prusa-mini
 
 kubectl label nodes cmp2 type=pool
 kubectl label nodes cmp3 type=pool
@@ -49,6 +97,22 @@ microk8s kubectl drain <node> --ignore-daemonsets
 sudo snap refresh microk8s --channel=1.21/stable
 microk8s.kubectl get no
 microk8s kubectl uncordon <node>
+```
+
+### CNI
+
+```
+/home/linuxbrew/.linuxbrew/bin/brew install calicoctl
+/home/linuxbrew/.linuxbrew/bin/calicoctl node checksystem
+
+```
+
+### Tcpdump
+
+```
+tcpdump -n '(src net (10 or 172.16/12 or 192.168/16) and dst net (10 or 172.16/12 or 192.168/16)) and (port 443 or port 80 or port 31046 or port 30861) and not ( net 10.152.183.1 )' -vi any
+
+tcpdump -s 0 -vlnA '(src net (10 or 172.16/12 or 192.168/16) and dst net (10 or 172.16/12 or 192.168/16)) and ((port 443 or port 80 or port 31046 or port 30861 or port 8443 or port 8000) or (dst net 10.10.0.0/16)) and not ( net 10.152.183.1 ) and not port 22 or (( src net 10.1.24.2)  and (src port 8443 or port 8000))' -i any
 ```
 
 
@@ -95,11 +159,11 @@ Internal IP
 microk8s stop
 
 cat <<-EOF >> /var/snap/microk8s/current/args/kubelet
---node-ip=10.10.1.11
+--node-ip=10.10.1.15
 EOF
 
 cat <<-EOF >> /var/snap/microk8s/current/args/kube-apiserver
---advertise-address=10.10.1.11
+--advertise-address=10.10.1.15
 EOF
 
 microk8s start

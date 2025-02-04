@@ -1,11 +1,13 @@
-
 set shell := ["bash", "-cu"]
 BUILD_DIR := ".build"
-TARGET := env('TARGET', 'kwok-local')
 KLUCTL := env('KLUCTL_BIN', 'kluctl')
 KUBECTL := env('KUBECTL_BIN', 'kubectl')
+TARGET := env('TARGET', 'kwok-local')
 
-args := ""
+include := ""
+exclude := ""
+args := if include != "" { " --include-tag " + include } else \
+        if exclude != "" { " --exclude-tag " + exclude } else { "" }
 
 _default:
     @just --list --unsorted
@@ -26,6 +28,9 @@ clean_build:
 
 # Shortcuts
 
+kluctl action="get" args="":
+    kubectl {{action}} KluctlDeployment -n kluctl-system {{args}}
+
 kluctl-webui:
      kubectl -n kluctl-system get secret webui-secret -o jsonpath='{.data.admin-password}' | base64 -d |pbcopy &&\
      open http://localhost:8080 &\
@@ -36,14 +41,20 @@ kluctl-webui:
 
 # diff deployment changes against cluster
 diff +args=args: clean_build
-    {{KLUCTL}} diff -t {{TARGET}} --replace-on-error --render-output-dir {{BUILD_DIR}} {{args}}
+    {{KLUCTL}} diff -t {{TARGET}} --ignore-kluctl-metadata --replace-on-error --render-output-dir {{BUILD_DIR}} {{args}}
 
 # diff deployment changes against cluster, no no-obfuscate
 diff-raw +args=args: clean_build
-    {{KLUCTL}} diff -t {{TARGET}} --no-obfuscate --replace-on-error --render-output-dir {{BUILD_DIR}} {{args}}
+    {{KLUCTL}} diff -t {{TARGET}} --ignore-kluctl-metadata --no-obfuscate --replace-on-error --render-output-dir {{BUILD_DIR}} {{args}}
 
-deploy +args=args: clean_build
+@deploy +args=args:
+    [[ args =~ "=" ]] && just {{args}} apply ||\
+                         just include={{args}} apply
+
+# build and apply with y/n
+apply +args=args: clean_build
     {{KLUCTL}} deploy -t {{TARGET}} --replace-on-error --render-output-dir {{BUILD_DIR}} {{args}}
+
 
 # @delete:
 #     {{KLUCTL}} delete -t {{TARGET}}

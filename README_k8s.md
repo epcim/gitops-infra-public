@@ -31,13 +31,19 @@ kubectl api-resources --verbs=list --namespaced -o name \
 ### Namespace
 
 - https://stackoverflow.com/questions/52369247/namespace-stuck-as-terminating-how-i-removed-it
-```
+```sh
 (
 NAMESPACE=your-rogue-namespace
 kubectl proxy &
 kubectl get namespace $NAMESPACE -o json |jq '.spec = {"finalizers":[]}' >temp.json
 curl -k -H "Content-Type: application/json" -X PUT --data-binary @temp.json 127.0.0.1:8001/api/v1/namespaces/$NAMESPACE/finalize
 )
+```
+
+or 
+```sh
+NS=
+kubectl get namespace "$NS" -o json   | tr -d "\n" | sed "s/\"finalizers\": \[[^]]\+\]/\"finalizers\": []/"   | kubectl replace --raw /api/v1/namespaces/$NS/finalize -f -
 ```
 
 

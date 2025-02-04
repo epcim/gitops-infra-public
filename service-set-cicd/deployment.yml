@@ -17,8 +17,8 @@ deployments:
           - includeSelectors: true
             pairs:
               app: gitops # FIXME, I have deployed with wrong nm
-        overlays:
-        - ./overlays/ingress-traefik.yaml 
+        # overlays:
+        # - ./overlays/ingress-traefik.yaml 
 
     # TODO, 2nd instance
   # - include: ../library/gitea
