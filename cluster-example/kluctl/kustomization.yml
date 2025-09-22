@@ -1,4 +1,5 @@
-
+# vim: set ft=helm.jinja:syntax=on
 resources:
-  - ./config/secret-sops-age-key.yml
-  - ./config/secret-model-repo-token.yml
+  #- ./config/secret-sops-keys.yml
+  #- ./config/secret-repo-tokens.yml
+  - ./config/crd-cluster.yml

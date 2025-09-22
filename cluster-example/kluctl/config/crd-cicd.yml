@@ -8,10 +8,9 @@ spec:
   source:
     git:
       url: https://github.com/epcim/gitops-infra-public.git
-      path: service-set-cicd
-  target: home
-  args:
-    environment: example
+      path: stack-cicd-FIXME
+  target: {{target.name}}
+  args: {{args}}
   context: default
   prune: false
   delete: false

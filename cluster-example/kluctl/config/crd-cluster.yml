@@ -1,0 +1,50 @@
+# vim: set ft=helm.jinja:syntax=on
+apiVersion: gitops.kluctl.io/v1beta1
+kind: KluctlDeployment
+metadata:
+  name: "cluster-{{target.name}}"
+  namespace: kluctl-system
+spec:
+  interval: 10m
+  deployInterval: 2h
+  source:
+    git:
+      url: https://github.com/epcim/gitops-infra-public.git
+      path: "./"
+  timeout: 5m
+  target: {{target.name}}
+  args: {{args}}
+  context: default
+
+  # Let it automatically clean up orphan resources and delete all resources when the KluctlDeployment itself gets
+  # deleted. You might consider setting these to false for prod and instead do manual pruning and deletion when the
+  # need arises.
+  dryRun: true
+  manual: false
+  delete: false
+  prune:  true
+  forceApply: false
+  noWait: false
+  #abortOnError: 
+  #includeTags, excludeTags, includeDeploymentDirs and excludeDeploymentDirs
+
+  decryption:
+    provider: sops
+
+  # AUTH/AUTHZ
+  #
+  # IRSA, https://kluctl.io/docs/gitops/spec/v1beta1/kluctldeployment/#aws-kms-with-irsa
+  # serviceAccountName: kluctl-deployment
+  #
+  # credentials:
+  #   # https://kluctl.io/docs/gitops/spec/v1beta1/kluctldeployment/#git-authentication
+  #   git:
+  #   {% for repo in secrets.argo.repo.keys() %}
+  #   {% if not secrets.argo.repo[repo].password is defined %}
+  #   {% continue %}
+  #   {% endif %}
+  #   - host: gitlab.com
+  #     path: USER_FIXME/{{ repo }}*
+  #     secretRef:
+  #       name: repo-{{ repo }}
+  #   {% endfor %}
