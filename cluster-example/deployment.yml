@@ -1,24 +1,14 @@
-# vim: set ft=helm.jinja:syntax=on
+# vim: textwidth=120 nowrap ft=helm.jinja:syntax=on
 # https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
 
-vars:
-  - file: ./vars-set-cicd.yml
-  - file: ./vars-set-home.yml
-  - file: ./vars-set-infra.yml
-
 deployments:
-  - include: ../cluster-base
+  - git:
+      url: https://gitea.example.net/epcim/gitops-library.git
+      subDir: service/kluctl
+    passVars: true
+    args: {{ args }}
+  - path: ./kluctl
+    when: args.manual
 
-  - include: kluctl
-    tags:
-    - kluctl
 
-  - path: gitops
-    tags:
-    - kluctl
 
-  - barrier: true
-
-  # FOR TESTING
-  # cicd, git
-  #- include: ../service-set-cicd

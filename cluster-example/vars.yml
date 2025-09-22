@@ -1,6 +1,12 @@
+# NOTE: Configuration variables
+# 1st key is "instance nm", an "varibles group name" (ie: library/stack)
+# 2nd key is "application"
+# 3rd level as per "helm values" + "kustomize"
+#
+# this is top level configuration file with highest precedence
+# you can configure here direct "helm values" and "kustomization"
 
-cluster:
-
+cluster: # stack/cluster-base
   metallb:
     namespace: metallb
     l2advertisement:
@@ -15,18 +21,30 @@ cluster:
 
   traefik:
     namespace: sys
-    resolver:
+    certificatesResolvers:
       cloudflare:
         acme:
           email: {{ secrets.infra.admin.email }}
+          caServer: https://acme-v02.api.letsencrypt.org/directory
+          #caServer: https://acme-staging-v02.api.letsencrypt.org/directory  # for test
     service:
       spec:
         loadBalancerIP: "10.10.2.50"
     persistence:
       enabled: true
-      storageClass: {{ kube.storage.class }}
+      storageClass: {{ kube.storage.default }}
     kustomize:
       resources:
         - helm-rendered.yaml
         - overlays/cloudflare-api.yml
+
+
+home:
+  jellyfin:
+    persistence:
+      config:
+        size: 10Gi
+        storageClass: {{ kube.storage.default }}
+
+cicd: {}
 

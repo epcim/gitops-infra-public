@@ -1,20 +1,25 @@
-# vim: textwidth=120:nowrap
 # https://kluctl.io/docs/kluctl/reference/deployments/deployment-yml/
+# vim: textwidth=120:nowrap ft=jinja syntax=case
 
 vars:
-  # shared layer of vars (boilerplate so no need to redefine the structures on each cluster-xyz deployment)
-  - file: cluster-{{target.name}}/vars-env.yml
-  - file: cluster-{{target.name}}/vars-sec.yml
-  - file: cluster-{{target.name}}/vars.yml
-    ignoreMissing: true
+  - file: cluster-{{args.env}}/vars-env.yml
+  - file: cluster-{{args.env}}/vars-sec.yml
+    sensitive: true
+  - file: cluster-{{args.env}}/vars.yml
 
 deployments:
-  # cluster (boostrap and core components)
-  - include: cluster-{{target.name}}
+  - include: ./library/stack/cluster-base
+  - include: cluster-{{args.env}}
 
-  # bundled stacks (where deployment can be driven only by provided {args}, or vars from cluster-{target.name}/vars*.yml)
-  # - include: library-stack/iot
-  # - include: library-stack/lma
+  {%- for stack in args.stacks %}
+  - when: args.stacks.{{ stack }}
+    include: ./library/stack/{{ stack }}
+    vars:
+     - file: ./library/stack/{{ stack }}/vars.yml
+       noOverride: true
+       ignoreMissing: true
+    tags: [{{ stack }}]
+  {%- endfor %}
 
 ignoreForDiff:
   - group: cicd1
@@ -25,3 +30,6 @@ ignoreForDiff:
 commonLabels:
   examples.kluctl.io/deployment-target: "{{ target.name }}"
 
+# TODO: 
+# 1. try different order cluster-base vs. cluser-ENV
+# 2. to get defualts (but from cluster-home)

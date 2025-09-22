@@ -1,48 +1,91 @@
 # https://kluctl.io/docs/kluctl/reference/kluctl-project/
+discriminator: kluctl-{{target.name | slugify }}{% if args.manual %}-manual{% endif %}
 
-# NOTE: Some targets are deployment `layers` of for the same cluster
-# NOTE: Kwok, Kind  cluster is only used for testing and development
-# NOTE: target.context: PATH to file or KUBECONFIG env value is used
-targets:
-- name: home
-  #context: .kube/config # or $KUBECONFIG exported on .envrc.local
-  args:
-    env: example
-    domain: example.net
-    ingress: traefik
 
-# for testing,
-# use `kwokctl --name example create cluster`
-- name: example
-  #context: export KUBECOFIG="$HOME/.kwok/clusters/local/kubeconfig.yaml" # or $KUBECONFIG exported on .envrc.local
-  args:
-    env: example
+# codecompanion
+# @files load all cluster-home/deployment.yml ./deployment.yml library/jellyfin/*yml .kluctl.yml
 
-discriminator: "kluctl-{{ target.name | slugify }}"
 
 args:
 - name: env
-  default: example
-- name: kube
-  default: microk8s
-- name: cluster
-  default: example
-- name: ingress
-  default: traefik
-- name: domain
-  default: example.com
-# enabled features, value resolved by deployment.yml or on library/library-stack
-# an list, order  matter on library vars loading (overriding, first in list win)
-- name: features
+  default: kwok
+- name: bootstrap     # indicates first time start for the component (if required)
+  default: false
+- name: manual        # will not be executed by controller reconciliation
+  default: false
+- name: controller    # indicates deployment through kluctl controller
+  default: false
+#
+# library/stacks
+# and their args configuration
+- name: stacks
   default:
-    - longhorn:
-    - metallb:
-    - velero:
-    - traefik:
-        resolver: "cloudflare"
+    cicd: true
+    home: true
+    networking: true
 
-aws:
-#   profile: default
-#   serviceAccount:
-#     name: sre-account
-#     namespace: sre-account-namespace
+# DEPRECATED, in favor of stack
+# - name: components
+#   default:
+#     sys: true
+#     mon: true
+#     infra:
+#       microk8s: false
+#       longhorn: false
+#       metallb: false
+#       velero: false
+#       traefik:
+#         resolver: "cloudflare"
+
+# DEPRECATED, for temp. backward compatibility
+# each service needs to support domain, flavor, feat: [ha, backup]
+# - does thes are on/off or values?
+# - how to deliver overrides?
+#   - like resolver: cloudflare?
+# - name: domain
+#   default: example.com
+# - name: kube
+#   default: microk8s
+# - name: features
+#   default: {}
+# - name: flavors
+#   default: {}
+# where to define per service storageClass, ingressClass? as args?
+
+
+
+# NOTE: Targets points to k8s and deploy deployment.yml &./cluster-* 
+# NOTE: Cluster folder is configuration wrapper for library or stack
+# NOTE: Kwok, Kind  cluster is only used for testing and development
+# NOTE: target.context: PATH to file or KUBECONFIG env value is used
+
+targets:
+
+# PRODUCTION TARGETS
+- name: cluster-home
+  ## context: .kube/config # or $KUBECONFIG exported on .envrc.local
+  args:
+    env: home
+    flavor: homelab
+    domain: example.net
+    ingress: traefik
+    stacks:
+      cicd: true
+      home: true
+      networking: true
+      monitoring: false
+
+
+
+# TEST TARGETS
+- name: kwok # kwokctl --name $ENV create cluster
+  # context: FROM KUBECONFIG ENV, ie: KUBECONFIG=$HOME/.kwok/clusters/$ENV/kubeconfig.yaml 
+  args:
+    env: test
+    bootstrap: true
+    
+- name: kind # kind create cluster
+  context: kind-kind
+  args:
+    env: test
+    bootstrap: true
