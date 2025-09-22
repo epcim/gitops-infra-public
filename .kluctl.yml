@@ -1,11 +1,6 @@
 # https://kluctl.io/docs/kluctl/reference/kluctl-project/
 discriminator: kluctl-{{target.name | slugify }}{% if args.manual %}-manual{% endif %}
 
-
-# codecompanion
-# @files load all cluster-home/deployment.yml ./deployment.yml library/jellyfin/*yml .kluctl.yml
-
-
 args:
 - name: env
   default: kwok
@@ -19,40 +14,7 @@ args:
 # library/stacks
 # and their args configuration
 - name: stacks
-  default:
-    cicd: true
-    home: true
-    networking: true
-
-# DEPRECATED, in favor of stack
-# - name: components
-#   default:
-#     sys: true
-#     mon: true
-#     infra:
-#       microk8s: false
-#       longhorn: false
-#       metallb: false
-#       velero: false
-#       traefik:
-#         resolver: "cloudflare"
-
-# DEPRECATED, for temp. backward compatibility
-# each service needs to support domain, flavor, feat: [ha, backup]
-# - does thes are on/off or values?
-# - how to deliver overrides?
-#   - like resolver: cloudflare?
-# - name: domain
-#   default: example.com
-# - name: kube
-#   default: microk8s
-# - name: features
-#   default: {}
-# - name: flavors
-#   default: {}
-# where to define per service storageClass, ingressClass? as args?
-
-
+  default: {}
 
 # NOTE: Targets points to k8s and deploy deployment.yml &./cluster-* 
 # NOTE: Cluster folder is configuration wrapper for library or stack
@@ -62,19 +24,16 @@ args:
 targets:
 
 # PRODUCTION TARGETS
-- name: cluster-home
+- name: cluster-example
   ## context: .kube/config # or $KUBECONFIG exported on .envrc.local
   args:
-    env: home
-    flavor: homelab
+    env: eample
+    flavor: "test"
     domain: example.net
     ingress: traefik
     stacks:
       cicd: true
-      home: true
-      networking: true
       monitoring: false
-
 
 
 # TEST TARGETS

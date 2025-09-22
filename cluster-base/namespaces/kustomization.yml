@@ -1,6 +1,0 @@
-resources:
-- namespaces.yml
-#- ./dockerconfig.yaml
-
-generatorOptions:
-  disableNameSuffixHash: true

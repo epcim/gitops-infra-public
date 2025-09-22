@@ -1,9 +1,0 @@
-
-{% for ns in kube.namespaces %}
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ ns }}
-
-{% endfor %}
